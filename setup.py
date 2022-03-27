@@ -51,12 +51,11 @@ install_requires = [
     "torch_optimizer==0.1.0",
     "torchvision>=0.9.0",
     "torch>=1.9",
-    "yahp>=0.0.14",
+    "yahp>=0.1.0",
     "requests>=2.26.0",
     "numpy==1.21.5",
     "apache-libcloud>=3.3.1",
     "psutil>=5.8.0",
-    "wget==3.2",
 ]
 extra_deps = {}
 
@@ -80,7 +79,7 @@ extra_deps['dev'] = [
     'pyright==1.1.224.post1',
     'recommonmark==0.7.1',
     'sphinx>=4.4.0',
-    'docutils>=0.17',
+    'docutils>=0.15',
     'sphinx_copybutton==0.5.0',
     'sphinx_markdown_tables==0.0.15',
     'sphinx-argparse==0.3.1',
@@ -94,7 +93,6 @@ extra_deps['dev'] = [
     'pylint>=2.12.2',
     'docformatter>=1.4',
     'sphinx_panels==0.6.0',
-    'pycocotools@git+https://github.com/cocodataset/cocoapi#egg=pycocotools&subdirectory=PythonAPI',
 ]
 
 extra_deps["deepspeed"] = [
@@ -103,6 +101,7 @@ extra_deps["deepspeed"] = [
 
 extra_deps["wandb"] = [
     'wandb==0.12.10',
+    'coolname>=1.1.0',
 ]
 
 extra_deps["unet"] = [
@@ -110,13 +109,27 @@ extra_deps["unet"] = [
     'scikit-learn>=1.0.1',
 ]
 
+extra_deps["vit"] = [
+    'vit_pytorch>=0.27',
+]
+
 extra_deps["timm"] = [
     'timm==0.5.4',
+]
+
+extra_deps["coco"] = [
+    'pycocotools>=2.0.4',
 ]
 
 extra_deps["nlp"] = [
     'transformers>=4.11',
     'datasets>=1.14',
+]
+
+extra_deps['webdataset'] = [
+    'awscli>=1.22.60',
+    'webdataset @ git+https://github.com/mosaicml/webdataset.git@dev',
+    'wurlitzer>=3.0.2',
 ]
 
 extra_deps['all'] = set(dep for deps in extra_deps.values() for dep in deps)
