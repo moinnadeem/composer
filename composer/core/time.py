@@ -11,19 +11,18 @@ responsible for updating it at the end of every epoch and batch.  There is only 
 
 The :class:`~.time.Time` class represents static durations of training time or points in the training process in terms
 of a specific :class:`~.time.TimeUnit` enum. This class supports comparisons, arithmetic, and conversions.
+
+See the :doc:`Time Guide </trainer/time>` for more details on tracking time during training.
 """
 from __future__ import annotations
 
 import re
 import textwrap
 import warnings
-from typing import TYPE_CHECKING, Generic, NamedTuple, TypeVar, Union, cast
+from typing import Any, Dict, Generic, NamedTuple, TypeVar, Union, cast
 
 from composer.core.serializable import Serializable
 from composer.utils.string_enum import StringEnum
-
-if TYPE_CHECKING:
-    from composer.core.types import StateDict
 
 __all__ = ["TimeUnit", "Time", "Timer", "Timestamp"]
 
@@ -59,6 +58,8 @@ TValue = TypeVar("TValue", int, float)
 class Time(Generic[TValue]):
     """Time represents static durations of training time or points in the training process in terms of a
     :class:`TimeUnit` enum (epochs, batches, samples, tokens, or duration).
+
+    See the :doc:`Time Guide </trainer/time>` for more details on tracking time during training.
 
     To construct an instance of :class:`Time`, you can either:
 
@@ -232,13 +233,15 @@ class Time(Generic[TValue]):
                     To fix this warning, replace {other} with {other_parsed}."""))
             return other_parsed
 
-        raise NotImplementedError(f"Cannot convert type {other} to {self.__class__.__name__}")
+        raise TypeError(f"Cannot convert type {other} to {self.__class__.__name__}")
 
     def _cmp(self, other: object) -> int:
         # When doing comparisions, and other is an integer (or float), we can safely infer
         # the unit from self.unit
         # E.g. calls like this should be allowed: if batch < 42: do_something()
         # This eliminates the need to call .value everywhere
+        if not isinstance(other, (int, float, Time, str)):
+            return NotImplemented
         if isinstance(other, (int, float)):
             other = type(self)(other, self.unit)
         other = self._parse(other)
@@ -354,7 +357,15 @@ class Time(Generic[TValue]):
 
 
 class Timer(Serializable):
-    """Timer tracks the current training progress, in terms of epochs, batches, samples, and tokens."""
+    """Timer tracks the current training progress, in terms of epochs, batches, samples, and tokens.
+
+    See the :doc:`Time Guide </trainer/time>` for more details on tracking time during training.
+
+    .. note::
+
+        An instance of this class is automatically constructed by the :class:`~composer.core.state.State` constructor.
+        A user need not instantiate this class.
+    """
 
     def __init__(self):
         self._epoch = Time(0, TimeUnit.EPOCH)
@@ -365,7 +376,7 @@ class Timer(Serializable):
         self._sample_in_epoch = Time(0, TimeUnit.SAMPLE)
         self._token_in_epoch = Time(0, TimeUnit.TOKEN)
 
-    def state_dict(self) -> StateDict:
+    def state_dict(self) -> Dict[str, Any]:
         return {
             "epoch": self.epoch.value,
             "batch": self.batch.value,
@@ -376,7 +387,7 @@ class Timer(Serializable):
             "token_in_epoch": self.token_in_epoch.value,
         }
 
-    def load_state_dict(self, state: StateDict) -> None:
+    def load_state_dict(self, state: Dict[str, Any]) -> None:
         self._epoch = Time(state["epoch"], TimeUnit.EPOCH)
         self._batch = Time(state["batch"], TimeUnit.BATCH)
         self._sample = Time(state["sample"], TimeUnit.SAMPLE)
@@ -387,37 +398,37 @@ class Timer(Serializable):
 
     @property
     def epoch(self) -> Time[int]:
-        """The current epoch."""
+        """The total epoch count."""
         return self._epoch
 
     @property
     def batch(self) -> Time[int]:
-        """The current batch."""
+        """The total batch count."""
         return self._batch
 
     @property
     def sample(self) -> Time[int]:
-        """The current sample."""
+        """The total sample count."""
         return self._sample
 
     @property
     def token(self) -> Time[int]:
-        """The current token."""
+        """The total token count."""
         return self._token
 
     @property
     def batch_in_epoch(self) -> Time[int]:
-        """The number of batches seen in the current epoch (resets at 0 at the beginning of every epoch)."""
+        """The batch count in the current epoch (resets at 0 at the beginning of every epoch)."""
         return self._batch_in_epoch
 
     @property
     def sample_in_epoch(self) -> Time[int]:
-        """The number of samples seen in the current epoch (resets at 0 at the beginning of every epoch)."""
+        """The sample count in the current epoch (resets at 0 at the beginning of every epoch)."""
         return self._sample_in_epoch
 
     @property
     def token_in_epoch(self) -> Time[int]:
-        """The number of tokens seen in the current epoch (resets at 0 at the beginning of every epoch)."""
+        """The token count in the current epoch (resets at 0 at the beginning of every epoch)."""
         return self._token_in_epoch
 
     def get(self, unit: Union[str, TimeUnit]) -> Time[int]:
@@ -483,9 +494,11 @@ class Timer(Serializable):
                     To fix this warning, replace {other} with {other_parsed}."""))
             return other_parsed
 
-        raise NotImplementedError(f"Cannot convert type {other} to {self.__class__.__name__}")
+        raise TypeError(f"Cannot convert type {other} to {self.__class__.__name__}")
 
     def __eq__(self, other: object):
+        if not isinstance(other, (Time, Timer, str)):
+            return NotImplemented
         if isinstance(other, Timer):
             return self.state_dict() == other.state_dict()
         other = self._parse(other)
@@ -493,6 +506,8 @@ class Timer(Serializable):
         return self_counter == other
 
     def __ne__(self, other: object):
+        if not isinstance(other, (Time, Timer, str)):
+            return NotImplemented
         if isinstance(other, Timer):
             return self.state_dict() != other.state_dict()
         other = self._parse(other)
@@ -500,21 +515,29 @@ class Timer(Serializable):
         return self_counter != other
 
     def __lt__(self, other: object):
+        if not isinstance(other, (Time, str)):
+            return NotImplemented
         other = self._parse(other)
         self_counter = self.get(other.unit)
         return self_counter < other
 
     def __le__(self, other: object):
+        if not isinstance(other, (Time, str)):
+            return NotImplemented
         other = self._parse(other)
         self_counter = self.get(other.unit)
         return self_counter <= other
 
     def __gt__(self, other: object):
+        if not isinstance(other, (Time, str)):
+            return NotImplemented
         other = self._parse(other)
         self_counter = self.get(other.unit)
         return self_counter > other
 
     def __ge__(self, other: object):
+        if not isinstance(other, (Time, str)):
+            return NotImplemented
         other = self._parse(other)
         self_counter = self.get(other.unit)
         return self_counter >= other
@@ -554,13 +577,13 @@ class Timestamp(NamedTuple):
         :class:`Timestamp` should not be instantiated directly; instead use :meth:`Timer.get_timestamp`.
 
     Attributes:
-        epoch (Time[int]): epoch at a snapshot.
-        batch (Time[int]): batch at a snapshot.
-        batch_in_epoch (Time[int]): The number of batches seen in the epoch at a snapshot.
-        sample (Time[int]): sample at a snapshot.
-        sample_in_epoch (Time[int]): The number of samples seen in the epoch at a snapshot.
-        token (Time[int]): token at a snapshot.
-        token_in_epoch (Time[int]): The number of tokens seen in the epoch at a snapshot.
+        epoch (Time[int]): The total epoch count when the :class`Timestamp` was generated.
+        batch (Time[int]): The total batch count when the :class`Timestamp` was generated.
+        batch_in_epoch (Time[int]): The batch count in the epoch when the :class`Timestamp` was generated.
+        sample (Time[int]): The total sample count when the :class`Timestamp` was generated.
+        sample_in_epoch (Time[int]): The sample count in the epoch when the :class`Timestamp` was generated.
+        token (Time[int]): The total token count when the :class`Timestamp` was generated.
+        token_in_epoch (Time[int]): The token count in the epoch when the :class`Timestamp` was generated.
     """
     epoch: Time[int]
     batch: Time[int]

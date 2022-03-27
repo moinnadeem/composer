@@ -8,15 +8,17 @@ from typing import Dict, Mapping, Optional
 
 import torch
 
+from composer.core import Algorithm, Event, State
 from composer.core.time import TimeUnit
-from composer.core.types import Algorithm, Batch, Event, Logger, State, Tensor
+from composer.core.types import Batch
+from composer.loggers import Logger
 from composer.models.transformer_shared import ComposerTransformer
 from composer.utils import ensure_tuple
 
 __all__ = ["SeqLengthWarmup", "set_batch_sequence_length"]
 
 
-def set_batch_sequence_length(batch: Dict[str, Tensor], curr_seq_len: int, truncate: bool = True) -> Batch:
+def set_batch_sequence_length(batch: Dict[str, torch.Tensor], curr_seq_len: int, truncate: bool = True) -> Batch:
     """Set the sequence length of a batch.
 
     Changes the sequence length of all tensors in the provided dictionary
@@ -39,14 +41,14 @@ def set_batch_sequence_length(batch: Dict[str, Tensor], curr_seq_len: int, trunc
         batch (Dict[str, Tensor]): The input batch to the model, must be a dictionary.
         curr_seq_length (int): The desired sequence length to apply.
         truncate (bool, optional): Truncate sequences early, or reshape tensors to create
-            new examples out of the extra tokens. Default = ``True``.
+            new examples out of the extra tokens. Default: ``True``.
 
     Returns:
         Dict[str, Tensor]: a Mapping of input tensors to the model,
             where all tensors have curr_seq_len in the second dimension.
 
     Example:
-    
+
     .. code-block::
 
         import composer.functional as cf
@@ -259,7 +261,7 @@ class SeqLengthWarmup(Algorithm):
         state.batch = set_batch_sequence_length(state.batch_dict, curr_seq_len, self.truncate)
 
         batch_size = state.batch_dict['input_ids'].shape[0]
-        logger.metric_batch({
+        logger.data_batch({
             'seq_length_warmup/curr_seq_len': curr_seq_len,
             'seq_length_warmup/curr_bs': batch_size,
         })

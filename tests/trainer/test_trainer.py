@@ -2,36 +2,41 @@
 
 import os
 import pathlib
+from copy import deepcopy
+from typing import Dict
 
 import pytest
 import torch
 from torch.nn.parallel import DistributedDataParallel
 from torch.utils.data import DataLoader
 
-from composer.algorithms import LayerFreezing
-from composer.algorithms.cutout.cutout import CutOut
-from composer.callbacks import LRMonitor
-from composer.callbacks.run_directory_uploader import RunDirectoryUploader
+from composer import Trainer
+from composer.algorithms import CutOut, LabelSmoothing, LayerFreezing
+from composer.callbacks import LRMonitor, RunDirectoryUploader
+from composer.callbacks.checkpoint_saver import CheckpointSaver
 from composer.core.callback import Callback
-from composer.core.time import Time, TimeUnit
-from composer.core.types import Model
-from composer.loggers import FileLogger, TQDMLogger, WandBLogger
-from composer.trainer import Trainer
+from composer.core.event import Event
+from composer.core.precision import Precision
+from composer.loggers import FileLogger, ProgressBarLogger, WandBLogger
+from composer.trainer.devices.device import Device
 from composer.trainer.trainer_hparams import algorithms_registry, callback_registry, logger_registry
 from composer.utils import dist
+from composer.utils.object_store import ObjectStoreHparams
 from tests.common import (RandomClassificationDataset, RandomImageDataset, SimpleConvModel, SimpleModel, device,
                           world_size)
 
 
+@pytest.mark.timeout(30)  # TODO lower the timeout. See https://github.com/mosaicml/composer/issues/774.
 class TestTrainerInit():
 
     @pytest.fixture
-    def config(self):
+    def config(self, rank_zero_seed: int):
         return {
             'model': SimpleModel(),
             'train_dataloader': DataLoader(dataset=RandomClassificationDataset()),
             'eval_dataloader': DataLoader(dataset=RandomClassificationDataset()),
             'max_duration': '2ep',
+            'seed': rank_zero_seed,
         }
 
     def test_init(self, config):
@@ -45,12 +50,12 @@ class TestTrainerInit():
 
     def test_loggers_before_callbacks(self, config):
         config.update({
-            "loggers": [TQDMLogger()],
+            "loggers": [ProgressBarLogger()],
             "callbacks": [LRMonitor()],
         })
 
         trainer = Trainer(**config)
-        assert isinstance(trainer.state.callbacks[0], TQDMLogger)
+        assert isinstance(trainer.state.callbacks[0], ProgressBarLogger)
         assert isinstance(trainer.state.callbacks[1], LRMonitor)
 
     @device('gpu', 'cpu')
@@ -84,7 +89,8 @@ class TestTrainerInit():
         with pytest.raises(ValueError, match="active iterator"):
             Trainer(**config)
 
-    def test_init_with_integers(self, config, tmpdir):
+    @pytest.mark.timeout(5.0)
+    def test_init_with_integers(self, config, tmpdir: pathlib.Path):
         config.update({
             'max_duration': 1,
             'save_interval': 10,
@@ -93,9 +99,15 @@ class TestTrainerInit():
 
         trainer = Trainer(**config)
         assert trainer.state.max_duration == "1ep"
-        assert trainer._checkpoint_saver is not None and \
-            trainer._checkpoint_saver._save_interval == "10ep"
+        checkpoint_saver = None
+        for callback in trainer.state.callbacks:
+            if isinstance(callback, CheckpointSaver):
+                checkpoint_saver = callback
+        assert checkpoint_saver is not None
+        trainer.state.timer.epoch._value = 10
+        assert checkpoint_saver.save_interval(trainer.state, Event.EPOCH_CHECKPOINT)
 
+    @pytest.mark.timeout(5.0)
     def test_init_with_max_duration_in_batches(self, config):
         config["max_duration"] = '1ba'
         trainer = Trainer(**config)
@@ -104,30 +116,46 @@ class TestTrainerInit():
 
 @world_size(1, 2)
 @device('cpu', 'gpu', 'gpu-amp', precision=True)
+@pytest.mark.timeout(30)  # TODO lower the timeout. See https://github.com/mosaicml/composer/issues/774.
 class TestTrainerEquivalence():
 
-    reference_model: Model
+    reference_model: torch.nn.Module
     reference_folder: pathlib.Path
+    default_threshold: Dict[str, float]
 
-    def assert_models_equal(self, model_1, model_2):
+    def assert_models_equal(self, model_1, model_2, threshold=None):
+        if threshold is None:
+            threshold = self.default_threshold
+
+        assert model_1 is not model_2, "Same model should not be compared."
         for param1, param2 in zip(model_1.parameters(), model_2.parameters()):
-            torch.testing.assert_allclose(param1, param2)
+            torch.testing.assert_allclose(param1, param2, **threshold)
+
+    @pytest.fixture(autouse=True)
+    def set_default_threshold(self, device, precision, world_size):
+        """Sets the default threshold to 0.
+
+        Individual tests can override by passing thresholds directly to assert_models_equal.
+        """
+        self.default_threshold = {'atol': 0, 'rtol': 0}
 
     @pytest.fixture
-    def config(self, device, precision, world_size):
+    def config(self, device: Device, precision: Precision, world_size: int, rank_zero_seed: int):
+        """Returns the reference config."""
+
         return {
             'model': SimpleModel(),
             'train_dataloader': DataLoader(
                 dataset=RandomClassificationDataset(),
                 batch_size=4,
-                shuffle=True,
+                shuffle=False,
             ),
             'eval_dataloader': DataLoader(
                 dataset=RandomClassificationDataset(),
                 shuffle=False,
             ),
             'max_duration': '2ep',
-            'seed': 0,
+            'seed': rank_zero_seed,
             'device': device,
             'precision': precision,
             'deterministic_mode': True,  # testing equivalence
@@ -137,8 +165,10 @@ class TestTrainerEquivalence():
     @pytest.fixture(autouse=True)
     def create_reference_model(self, config, tmpdir_factory, *args):
         """Trains the reference model, and saves checkpoints."""
+        config = deepcopy(config)  # ensure the reference model is not passed to tests
+
         save_folder = tmpdir_factory.mktemp("{device}-{precision}".format(**config))
-        config.update({'save_interval': '1ep', 'save_folder': save_folder})
+        config.update({'save_interval': '1ep', 'save_folder': save_folder, 'save_name_format': 'ep{epoch}.pt'})
 
         trainer = Trainer(**config)
         trainer.fit()
@@ -152,7 +182,14 @@ class TestTrainerEquivalence():
 
         self.assert_models_equal(trainer.state.model, self.reference_model)
 
-    def test_grad_accum(self, config, *args):
+    def test_grad_accum(self, config, precision, *args):
+        # grad accum requires non-zero tolerance
+        # Precision.AMP requires a even higher tolerance.
+        threshold = {
+            'atol': 1e-04 if precision == Precision.AMP else 1e-08,
+            'rtol': 1e-02 if precision == Precision.AMP else 1e-05,
+        }
+
         config.update({
             'grad_accum': 2,
         })
@@ -160,28 +197,36 @@ class TestTrainerEquivalence():
         trainer = Trainer(**config)
         trainer.fit()
 
-        self.assert_models_equal(trainer.state.model, self.reference_model)
+        self.assert_models_equal(trainer.state.model, self.reference_model, threshold=threshold)
 
     def test_max_duration(self, config, *args):
-        max_duration = Time.from_timestring(config['max_duration'])
-        assert max_duration.unit == TimeUnit.EPOCH
-        max_duration_in_batches = Time(len(config['train_dataloader']) * int(max_duration.value), TimeUnit.BATCH)
-        config['max_duration'] = max_duration_in_batches.to_timestring()
+        num_batches = 2 * len(config["train_dataloader"])  # convert 2ep to batches
+        config['max_duration'] = f'{num_batches}ba'
+
         trainer = Trainer(**config)
-        assert trainer.state.max_duration.unit == TimeUnit.BATCH
         trainer.fit()
         self.assert_models_equal(trainer.state.model, self.reference_model)
 
     def test_checkpoint(self, config, *args):
         # load from epoch 1 checkpoint and finish training
         checkpoint_file = os.path.join(self.reference_folder, 'ep1.pt')
-        config['load_path'] = checkpoint_file
+        config['load_path_format'] = checkpoint_file
 
         trainer = Trainer(**config)
         assert trainer.state.timer.epoch == "1ep"  # ensure checkpoint state loaded
         trainer.fit()
 
         self.assert_models_equal(trainer.state.model, self.reference_model)
+
+    def test_algorithm_different(self, config, *args):
+        # as a control, we train with an algorithm and
+        # expect the test to fail
+        config['algorithms'] = [LabelSmoothing(0.1)]
+        trainer = Trainer(**config)
+        trainer.fit()
+
+        with pytest.raises(AssertionError):
+            self.assert_models_equal(trainer.state.model, self.reference_model)
 
     def test_model_init(self, config, *args):
         # as a control test, we reinitialize the model weights, and
@@ -217,10 +262,11 @@ class AssertDataAugmented(Callback):
         assert not torch.allclose(original_outputs[0], state.outputs[0])
 
 
+@pytest.mark.timeout(30)  # TODO lower the timeout. See https://github.com/mosaicml/composer/issues/774.
 class TestTrainerEvents():
 
     @pytest.fixture
-    def config(self):
+    def config(self, rank_zero_seed: int):
         return {
             'model': SimpleConvModel(),
             'train_dataloader': DataLoader(
@@ -229,11 +275,12 @@ class TestTrainerEvents():
             ),
             'eval_dataloader': None,
             'max_duration': '1ep',
-            'loggers': []
+            'loggers': [],
+            'seed': rank_zero_seed,
         }
 
     def test_data_augmented(self, config):
-        config['algorithms'] = [CutOut(n_holes=1, length=5)]
+        config['algorithms'] = [CutOut()]
 
         # we give the callback access to the dataset to test
         # that the images have been augmented.
@@ -265,10 +312,11 @@ config management to retrieve the objects to test.
 """
 
 
+@pytest.mark.timeout(30)  # TODO lower the timeout. See https://github.com/mosaicml/composer/issues/774.
 class TestTrainerAssets:
 
     @pytest.fixture
-    def config(self):
+    def config(self, rank_zero_seed: int):
         return {
             'model': SimpleConvModel(),
             'train_dataloader': DataLoader(
@@ -281,13 +329,14 @@ class TestTrainerAssets:
             ),
             'max_duration': '2ep',
             'loggers': [],  # no progress bar
+            'seed': rank_zero_seed,
         }
 
     # Note: Not all algorithms, callbacks, and loggers are compatible
     #       with the above configuration. The fixtures below filter and
     #       create the objects to test.
 
-    @pytest.fixture(params=algorithms_registry.items(), ids=algorithms_registry.keys())
+    @pytest.fixture(params=algorithms_registry.items(), ids=tuple(algorithms_registry.keys()))
     def algorithm(self, request):
 
         name, hparams = request.param
@@ -316,7 +365,7 @@ class TestTrainerAssets:
 
         return algorithm
 
-    @pytest.fixture(params=callback_registry.items(), ids=callback_registry.keys())
+    @pytest.fixture(params=callback_registry.items(), ids=tuple(callback_registry.keys()))
     def callback(self, request, tmpdir, monkeypatch):
         name, hparams = request.param
 
@@ -334,14 +383,27 @@ class TestTrainerAssets:
 
         return callback
 
-    @pytest.fixture(params=logger_registry.items(), ids=logger_registry.keys())
-    def logger(self, request):
+    @pytest.fixture(params=logger_registry.items(), ids=tuple(logger_registry.keys()))
+    def logger(self, request, tmpdir: pathlib.Path, monkeypatch: pytest.MonkeyPatch):
 
         name, hparams = request.param
+
+        remote_dir = str(tmpdir / "remote_dir")
+        os.makedirs(remote_dir)
+        local_dir = str(tmpdir / "local_dir")
+        os.makedirs(local_dir)
+        monkeypatch.setenv("OBJECT_STORE_KEY", remote_dir)  # for the local option, the key is the path
+        provider_hparams = ObjectStoreHparams(
+            provider='local',
+            key_environ="OBJECT_STORE_KEY",
+            container=".",
+        )
 
         required_args = {}
         if name == 'wandb':
             pytest.importorskip('wandb', reason='Required wandb')
+        if name == 'object_store':
+            required_args['object_store_hparams'] = provider_hparams
 
         return hparams(**required_args).initialize_object()
 
