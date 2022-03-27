@@ -14,8 +14,9 @@ import torch
 import yahp as hp
 from transformers.testing_utils import CaptureLogger
 
-from composer.core.types import Batch, DataSpec
-from composer.datasets.dataloader import DataloaderHparams
+from composer.core.data_spec import DataSpec
+from composer.core.types import Batch
+from composer.datasets.dataloader import DataLoaderHparams
 from composer.datasets.hparams import DatasetHparams
 from composer.utils import dist
 
@@ -171,7 +172,7 @@ class StreamingLMDatasetHparams(DatasetHparams):
         else:
             raise ValueError(f"Unknown group_method: '{group_method}'")
 
-    def initialize_object(self, batch_size: int, dataloader_hparams: DataloaderHparams) -> DataSpec:
+    def initialize_object(self, batch_size: int, dataloader_hparams: DataLoaderHparams) -> DataSpec:
         assert dataloader_hparams.num_workers == 1, "LM Streaming Dataloader only supports num_workers=1"
 
         try:
