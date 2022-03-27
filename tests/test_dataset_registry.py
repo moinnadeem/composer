@@ -72,8 +72,6 @@ def test_dataset(dataset_name: str, dummy_dataloader_hparams: DataLoaderHparams)
         return pytest.skip("Skipping test for webdatasets")
     hparams = default_required_fields[hparams_cls]()
     if not isinstance(hparams, SyntheticHparamsMixin):
-        print("Xfailing:", hparams)
-        assert False
         pytest.xfail(f"{hparams.__class__.__name__} does not support synthetic data")
 
     assert isinstance(hparams, SyntheticHparamsMixin)
