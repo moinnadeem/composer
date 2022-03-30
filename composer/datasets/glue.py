@@ -114,7 +114,7 @@ class GLUEHparams(DatasetHparams, SyntheticHparamsMixin):
 
             log.info(f"Loading {self.task.upper()} on rank ", dist.get_global_rank())
             download_config = datasets.utils.DownloadConfig(max_retries=self.max_network_retries)
-            dataset = datasets.load_dataset("glue", self.task, split=self.split, download_config=download_config)
+            dataset = datasets.load_dataset("moin_glue.py", self.task, split=self.split, download_config=download_config)
 
         log.info(f"Starting tokenization step by preprocessing over {self.num_workers} threads!")
         text_column_names = _task_to_keys[self.task]
