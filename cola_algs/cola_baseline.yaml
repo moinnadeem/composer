@@ -1,0 +1,92 @@
+name: cola-pareto-curves # Name of the sweep - it'll be used in run names
+project: cola-pareto-curves # Name of the Weights and Biases project to use
+image: mosaicml/pytorch_internal:moin  # Name of the docker image to use
+git_repo: https://github.com/moinnadeem/composer.git # Name of the git repo to clone - can be full URL or path under github.com
+git_branch: moin/streaming_bert # Name of the git branch/tag/commit to use
+command: >-
+  git clone {{ git_repo }} /root/composer
+
+  cd /root/composer
+
+  echo 'Checking out composer branch {{ git_branch }}'
+
+  git checkout {{ git_branch }}
+
+  pip install --user -e ".[all]"
+
+  git clone https://github.com/moinnadeem/apex /root/apex
+
+  cd /root/apex
+
+  pip install --user -v --disable-pip-version-check --no-cache-dir --global-option="--cpp_ext" --global-option="--cuda_ext" ./
+
+  cd /root/composer
+
+  composer -n {{ parameters['_n_gpus'] }} examples/run_composer_trainer.py
+  -f /mnt/config/parameters.yaml
+
+instance: r1z1-g1-a100  # Name of the instance you want to run on, e.g. r1z1-g8-a100
+run_type: convergence  # Type of run you want to perform (convergence is default and only one support currently)
+models: cola_debugging  # The name of the model you want to use - should match the name of a YAML file in your local composer "models" directory unless you are fully specifying model parameters in the `parameters` section
+parameters:  # Any parameter overrides you want to use IN EVERY RUN should be specified here
+  _n_gpus: 1
+grid:  # Any parameter overrides you want to sweep over should be specified here. Use "dot-syntax" to recurse into the nested parameters
+  optimizer.decoupled_adamw.lr:
+    - 1.0e-5
+  optimizer.decoupled_adamw.weight_decay:
+    - 0.0
+  grad_clip_norm:
+    - None
+  train_batch_size:
+    - 32
+  load_path_format:
+    # BASELINE
+    - https://storage.googleapis.com/bert_checkpoints/bert_baseline/rank_0/bert_checkpoints/it3500_2248.tar
+    - https://storage.googleapis.com/bert_checkpoints/bert_baseline/rank_0/bert_checkpoints/it14000_8977.tar
+    - https://storage.googleapis.com/bert_checkpoints/bert_baseline/rank_0/bert_checkpoints/it24500_15698.tar
+    - https://storage.googleapis.com/bert_checkpoints/bert_baseline/rank_0/bert_checkpoints/it35000_22428.tar
+    - https://storage.googleapis.com/bert_checkpoints/bert_baseline/rank_0/bert_checkpoints/it45500_29156.tar
+    - https://storage.googleapis.com/bert_checkpoints/bert_baseline/rank_0/bert_checkpoints/it56000_35960.tar
+    - https://storage.googleapis.com/bert_checkpoints/bert_baseline/rank_0/bert_checkpoints/it66500_42793.tar
+    - https://storage.googleapis.com/bert_checkpoints/bert_baseline/rank_0/bert_checkpoints/it68796_44284.tar
+    # GEGELU
+    - https://storage.googleapis.com/bert_checkpoints/bert_gelu_gated/rank_0/bert_checkpoints/it3500_2363.tar
+    - https://storage.googleapis.com/bert_checkpoints/bert_gelu_gated/rank_0/bert_checkpoints/it14000_9449.tar
+    - https://storage.googleapis.com/bert_checkpoints/bert_gelu_gated/rank_0/bert_checkpoints/it24500_16528.tar
+    - https://storage.googleapis.com/bert_checkpoints/bert_gelu_gated/rank_0/bert_checkpoints/it35000_23615.tar
+    - https://storage.googleapis.com/bert_checkpoints/bert_gelu_gated/rank_0/bert_checkpoints/it45500_30727.tar
+    - https://storage.googleapis.com/bert_checkpoints/bert_gelu_gated/rank_0/bert_checkpoints/it56000_37832.tar
+    - https://storage.googleapis.com/bert_checkpoints/bert_gelu_gated/rank_0/bert_checkpoints/it66500_44983.tar
+    - https://storage.googleapis.com/bert_checkpoints/bert_gelu_gated/rank_0/bert_checkpoints/it68796_46541.tar
+    # GEGELU + Fused
+    - https://storage.googleapis.com/bert_checkpoints/bert_gegelu_fused/rank_0/bert_checkpoints/it3500_1957.tar
+    - https://storage.googleapis.com/bert_checkpoints/bert_gegelu_fused/rank_0/bert_checkpoints/it14000_7746.tar
+    - https://storage.googleapis.com/bert_checkpoints/bert_gegelu_fused/rank_0/bert_checkpoints/it24500_13524.tar
+    - https://storage.googleapis.com/bert_checkpoints/bert_gegelu_fused/rank_0/bert_checkpoints/it35000_19298.tar
+    - https://storage.googleapis.com/bert_checkpoints/bert_gegelu_fused/rank_0/bert_checkpoints/it45500_25072.tar
+    - https://storage.googleapis.com/bert_checkpoints/bert_gegelu_fused/rank_0/bert_checkpoints/it56000_30847.tar
+    - https://storage.googleapis.com/bert_checkpoints/bert_gegelu_fused/rank_0/bert_checkpoints/it66500_36619.tar
+    - https://storage.googleapis.com/bert_checkpoints/bert_gegelu_fused/rank_0/bert_checkpoints/it68796_37886.tar
+    # Fused only 
+    - https://storage.googleapis.com/bert_checkpoints/bert_ln_fused/rank_0/bert_checkpoints/it3500_1899.tar
+    - https://storage.googleapis.com/bert_checkpoints/bert_ln_fused/rank_0/bert_checkpoints/it14000_7551.tar
+    - https://storage.googleapis.com/bert_checkpoints/bert_ln_fused/rank_0/bert_checkpoints/it24500_13224.tar
+    - https://storage.googleapis.com/bert_checkpoints/bert_ln_fused/rank_0/bert_checkpoints/it35000_18870.tar
+    - https://storage.googleapis.com/bert_checkpoints/bert_ln_fused/rank_0/bert_checkpoints/it45500_24544.tar
+    - https://storage.googleapis.com/bert_checkpoints/bert_ln_fused/rank_0/bert_checkpoints/it56000_30194.tar
+    - https://storage.googleapis.com/bert_checkpoints/bert_ln_fused/rank_0/bert_checkpoints/it66500_35826.tar
+    - https://storage.googleapis.com/bert_checkpoints/bert_ln_fused/rank_0/bert_checkpoints/it68796_37053.tar
+    # Swish fused
+    - https://storage.googleapis.com/bert_checkpoints/bert_swish_fused/rank_0/bert_checkpoints/it3500_1922.tar
+    - https://storage.googleapis.com/bert_checkpoints/bert_swish_fused/rank_0/bert_checkpoints/it14000_7628.tar
+    - https://storage.googleapis.com/bert_checkpoints/bert_swish_fused/rank_0/bert_checkpoints/it24500_13309.tar
+    - https://storage.googleapis.com/bert_checkpoints/bert_swish_fused/rank_0/bert_checkpoints/it35000_18994.tar
+    - https://storage.googleapis.com/bert_checkpoints/bert_swish_fused/rank_0/bert_checkpoints/it45500_24693.tar
+    - https://storage.googleapis.com/bert_checkpoints/bert_swish_fused/rank_0/bert_checkpoints/it56000_30387.tar
+    - https://storage.googleapis.com/bert_checkpoints/bert_swish_fused/rank_0/bert_checkpoints/it66500_36073.tar
+    - https://storage.googleapis.com/bert_checkpoints/bert_swish_fused/rank_0/bert_checkpoints/it68796_37319.tar
+  seed:
+    - 1
+    - 2
+    - 3
+    - 4
