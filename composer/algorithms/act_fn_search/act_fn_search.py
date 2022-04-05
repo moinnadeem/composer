@@ -113,13 +113,13 @@ def apply_act_fn(model: torch.nn.Module, act_fn_name: str, use_gated: bool, use_
 
     if use_rmsnorm:
         policy = {torch.nn.LayerNorm: lambda x, module_index: RMSNorm(dim=d_embed, eps=layernorm_eps)}
-        module_surgery.replace_module_classes(model=model, policies=policy)
+        module_surgery.replace_module_classes(module=model, policies=policy)
 
     if use_fln:
         policy = {
             torch.nn.LayerNorm: lambda x, module_index: FusedLayerNorm(normalized_shape=d_embed, eps=layernorm_eps)
         }
-        module_surgery.replace_module_classes(model=model, policies=policy)
+        module_surgery.replace_module_classes(module=model, policies=policy)
 
     print(model)
 
