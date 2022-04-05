@@ -20,7 +20,7 @@ from tqdm import tqdm
 from composer.algorithms import AlgorithmHparams
 from composer.core import Algorithm, Event, State
 from composer.loggers import Logger
-from composer.utils import surgery
+from composer.utils import module_surgery
 
 from .norms import RMSNorm
 
@@ -113,13 +113,13 @@ def apply_act_fn(model: torch.nn.Module, act_fn_name: str, use_gated: bool, use_
 
     if use_rmsnorm:
         policy = {torch.nn.LayerNorm: lambda x, module_index: RMSNorm(dim=d_embed, eps=layernorm_eps)}
-        surgery.replace_module_classes(model=model, policies=policy)
+        module_surgery.replace_module_classes(model=model, policies=policy)
 
     if use_fln:
         policy = {
             torch.nn.LayerNorm: lambda x, module_index: FusedLayerNorm(normalized_shape=d_embed, eps=layernorm_eps)
         }
-        surgery.replace_module_classes(model=model, policies=policy)
+        module_surgery.replace_module_classes(model=model, policies=policy)
 
     print(model)
 
