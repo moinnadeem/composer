@@ -14,6 +14,10 @@ command: >-
 
   pip install --user -e ".[all]"
 
+  pip uninstall torch
+
+  pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu113
+
   git clone https://github.com/moinnadeem/apex /root/apex
 
   cd /root/apex
