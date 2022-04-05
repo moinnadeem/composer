@@ -2,7 +2,7 @@ name: cola-pareto-curves # Name of the sweep - it'll be used in run names
 project: cola-pareto-curves # Name of the Weights and Biases project to use
 image: mosaicml/pytorch_internal:moin  # Name of the docker image to use
 git_repo: https://github.com/moinnadeem/composer.git # Name of the git repo to clone - can be full URL or path under github.com
-git_branch: moin/streaming_bert # Name of the git branch/tag/commit to use
+git_branch: moin/bert_act # Name of the git branch/tag/commit to use
 command: >-
   git clone {{ git_repo }} /root/composer
 
