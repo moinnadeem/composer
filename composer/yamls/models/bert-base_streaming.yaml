@@ -43,7 +43,7 @@ optimizer:
     weight_decay: 1.0e-5
 schedulers:
   - linear_decay_with_warmup:
-      warmup_time: 0.06dur
+      t_warmup: 0.06dur
 loggers:
   - file:
       log_level: batch 
@@ -51,7 +51,6 @@ loggers:
       buffer_size: 1
       flush_interval: 100
       log_interval: 100
-  - tqdm: {}
 max_duration: 1ep  # Baseline is 256M samples, 7 epochs is ~280M samples
 log_level: INFO 
 train_batch_size: 4000
