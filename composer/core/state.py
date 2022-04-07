@@ -328,8 +328,8 @@ class State(Serializable):
 
         # if necessary, delete some keys from the state_dict
         # if ignore_model_keys is not None and len(ignore_model_keys) > 0:
-            # for key in ignore_model_keys:
-                # del state_dict['model'][key]
+        # for key in ignore_model_keys:
+        # del state_dict['model'][key]
 
         # load checkpoint
         missing_keys, unexpected_keys = self.model.load_state_dict(state_dict['model'], strict=strict)
