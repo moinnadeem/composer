@@ -3,7 +3,6 @@ train_dataset:
     dataset_name: c4
     dataset_config_name: en
     split: train
-    max_shards: -1
     max_samples: 275184000 
     max_seq_len: 128 
     group_method: truncate # TODO: check that the code for this one is right
@@ -18,7 +17,6 @@ val_dataset:
     dataset_name: c4
     dataset_config_name: en
     split: validation
-    max_shards: -1
     max_samples: 32000 # there's a bug, this is currently per-device 
     max_seq_len: 128 
     group_method: truncate # TODO: check that the code for this one is right
@@ -45,6 +43,7 @@ schedulers:
   - linear_decay_with_warmup:
       t_warmup: 0.06dur
 loggers:
+  - progress_bar: {}
   - file:
       log_level: batch 
       filename: stdout
@@ -64,7 +63,7 @@ dataloader:
   num_workers: 1
   timeout: 0
   prefetch_factor: 2
-grad_accum: 100
+grad_accum: 1
 precision: amp
 grad_clip_norm: None
 validate_every_n_batches: 1000
