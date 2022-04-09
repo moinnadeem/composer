@@ -1,5 +1,5 @@
-name: cola-pareto-curves # Name of the sweep - it'll be used in run names
-project: cola-pareto-curves # Name of the Weights and Biases project to use
+name: sst2-pareto-curves # Name of the sweep - it'll be used in run names
+project: sst2-pareto-curves # Name of the Weights and Biases project to use
 image: mosaicml/pytorch_internal:moin  # Name of the docker image to use
 git_repo: https://github.com/moinnadeem/composer.git # Name of the git repo to clone - can be full URL or path under github.com
 git_branch: moin/act # Name of the git branch/tag/commit to use
@@ -31,17 +31,17 @@ command: >-
 
 instance: r1z1-g1-a100  # Name of the instance you want to run on, e.g. r1z1-g8-a100
 run_type: convergence  # Type of run you want to perform (convergence is default and only one support currently)
-models: cola_debugging  # The name of the model you want to use - should match the name of a YAML file in your local composer "models" directory unless you are fully specifying model parameters in the `parameters` section
+models: sst2_debugging  # The name of the model you want to use - should match the name of a YAML file in your local composer "models" directory unless you are fully specifying model parameters in the `parameters` section
 algorithms:
   - act_fn_search
 parameters:  # Any parameter overrides you want to use IN EVERY RUN should be specified here
   _n_gpus: 1
   algorithms:
     act_fn_search:
-      use_gated: false
+      use_gated: true
       use_rmsnorm: false
       use_fln: true
-      act_fn_name: no_replacement
+      act_fn_name: gelu 
 grid:  # Any parameter overrides you want to sweep over should be specified here. Use "dot-syntax" to recurse into the nested parameters
   optimizer.decoupled_adamw.lr:
     - 1.0e-5
@@ -52,15 +52,15 @@ grid:  # Any parameter overrides you want to sweep over should be specified here
   train_batch_size:
     - 32
   load_path_format:
-    # Fused only
-    - https://storage.googleapis.com/bert_checkpoints/bert_ln_fused/rank_0/bert_checkpoints/it3500_1899.tar
-    - https://storage.googleapis.com/bert_checkpoints/bert_ln_fused/rank_0/bert_checkpoints/it14000_7551.tar
-    - https://storage.googleapis.com/bert_checkpoints/bert_ln_fused/rank_0/bert_checkpoints/it24500_13224.tar
-    - https://storage.googleapis.com/bert_checkpoints/bert_ln_fused/rank_0/bert_checkpoints/it35000_18870.tar
-    - https://storage.googleapis.com/bert_checkpoints/bert_ln_fused/rank_0/bert_checkpoints/it45500_24544.tar
-    - https://storage.googleapis.com/bert_checkpoints/bert_ln_fused/rank_0/bert_checkpoints/it56000_30194.tar
-    - https://storage.googleapis.com/bert_checkpoints/bert_ln_fused/rank_0/bert_checkpoints/it66500_35826.tar
-    - https://storage.googleapis.com/bert_checkpoints/bert_ln_fused/rank_0/bert_checkpoints/it68796_37053.tar
+    # GEGELU + Fused
+    - https://storage.googleapis.com/bert_checkpoints/bert_gegelu_fused/rank_0/bert_checkpoints/it3500_1957.tar
+    - https://storage.googleapis.com/bert_checkpoints/bert_gegelu_fused/rank_0/bert_checkpoints/it14000_7746.tar
+    - https://storage.googleapis.com/bert_checkpoints/bert_gegelu_fused/rank_0/bert_checkpoints/it24500_13524.tar
+    - https://storage.googleapis.com/bert_checkpoints/bert_gegelu_fused/rank_0/bert_checkpoints/it35000_19298.tar
+    - https://storage.googleapis.com/bert_checkpoints/bert_gegelu_fused/rank_0/bert_checkpoints/it45500_25072.tar
+    - https://storage.googleapis.com/bert_checkpoints/bert_gegelu_fused/rank_0/bert_checkpoints/it56000_30847.tar
+    - https://storage.googleapis.com/bert_checkpoints/bert_gegelu_fused/rank_0/bert_checkpoints/it66500_36619.tar
+    - https://storage.googleapis.com/bert_checkpoints/bert_gegelu_fused/rank_0/bert_checkpoints/it68796_37886.tar
   seed:
     - 1
     - 2
