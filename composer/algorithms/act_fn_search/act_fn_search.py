@@ -18,7 +18,7 @@ from torch.nn.functional import relu
 from tqdm import tqdm
 #from xformers.triton.layer_norm import FusedLayerNorm as TritonLayerNorm
 
-from composer.algorithms.act_fn_search import TritonLayerNorm
+from composer.algorithms.act_fn_search.triton_ln import TritonLayerNorm
 from composer.algorithms import AlgorithmHparams
 from composer.core import Algorithm, Event, State
 from composer.loggers import Logger
