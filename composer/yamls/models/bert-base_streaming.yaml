@@ -12,20 +12,26 @@ train_dataset:
     seed: 17
     shuffle: true
     drop_last: true
-val_dataset:
-  streaming_lm:
-    dataset_name: c4
-    dataset_config_name: en
-    split: validation
-    max_samples: 32000 # there's a bug, this is currently per-device 
-    max_seq_len: 128 
-    group_method: truncate # TODO: check that the code for this one is right
-    tokenizer_name: bert-base-uncased 
-    use_masked_lm: true # TODO: check that the code for this one is right
-    mlm_probability: 0.15
-    seed: 17
-    shuffle: false
-    drop_last: true
+evaluators:
+  evaluator:
+    label: bert_pre_training
+    eval_dataset:
+      streaming_lm:
+        dataset_name: c4
+        dataset_config_name: en
+        split: validation
+        max_samples: 32000 # there's a bug, this is currently per-device 
+        max_seq_len: 128 
+        group_method: truncate # TODO: check that the code for this one is right
+        tokenizer_name: bert-base-uncased 
+        use_masked_lm: true # TODO: check that the code for this one is right
+        mlm_probability: 0.15
+        seed: 17
+        shuffle: false
+        drop_last: true
+    metric_names:
+      - LanguageCrossEntropy
+      - MaskedAccuracy
 model:
   bert:
     use_pretrained: false
