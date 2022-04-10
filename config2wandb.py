@@ -7,7 +7,7 @@ from tqdm import tqdm
 api = wandb.Api(timeout=19)
 
 entity = "mosaic-ml"
-conv_project = f"cola-pareto-curves"
+conv_project = f"bert-fused-layernorm"
 bert_conv_runs = api.runs(f"{entity}/{conv_project}")
 for run in tqdm(bert_conv_runs):
     if run.state != "finished":
