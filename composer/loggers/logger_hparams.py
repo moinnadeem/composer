@@ -124,7 +124,7 @@ class WandBLoggerHparams(LoggerDestinationHparams):
         config_dict = self.config
 
         if "config" in self.extra_init_params:
-            config_dict = self.extra_init_params["config"]
+            config_dict.update(self.extra_init_params["config"])
 
         if self.flatten_config:
             config_dict = self._flatten_dict(config_dict)

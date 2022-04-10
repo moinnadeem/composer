@@ -1,0 +1,4 @@
+use_gated: true
+use_rmsnorm: false
+use_fln: false 
+act_fn_name: gelu

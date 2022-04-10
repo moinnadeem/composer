@@ -29,7 +29,8 @@ log = logging.getLogger(__name__)
 
 __all__ = ["load_checkpoint", "save_checkpoint"]
 
-_COMPOSER_STATES_FILENAME = "composer_states.pt"
+# _COMPOSER_STATES_FILENAME = "composer_states.pt"
+_COMPOSER_STATES_FILENAME = "mosaic_states.pt"
 _DEEPSPEED_TAG = "deepspeed"  # always tag with the same, deterministic name. We'll rename the tarball to the appropriate name.
 
 

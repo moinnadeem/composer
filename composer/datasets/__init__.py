@@ -13,7 +13,6 @@ of the important classes in this module are described below:
   both training and eval datasets. See the documentation of :class:`~.DataLoaderHparams` for more details on these
   settings.
 """
-
 from composer.datasets.ade20k import ADE20kDatasetHparams, ADE20kWebDatasetHparams
 from composer.datasets.brats import BratsDatasetHparams
 from composer.datasets.c4 import C4DatasetHparams

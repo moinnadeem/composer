@@ -320,10 +320,18 @@ class State(Serializable):
             strict (bool): Whether the keys (i.e., model parameter names) in the model state dict should
                 perfectly match the keys in the model instance.
         """
+        state_dict = _ensure_backwards_compatible_checkpointing(state_dict)
         if state_dict.get("is_model_ddp", False) and not self.is_model_ddp:
             # This check is for backwards compatibility, as pre-v0.6.0 checkpoints serialized the state
             # with the `module.` prefix
             torch.nn.modules.utils.consume_prefix_in_state_dict_if_present(state_dict['model'], "module.")
+
+        # if necessary, delete some keys from the state_dict
+        # if ignore_model_keys is not None and len(ignore_model_keys) > 0:
+        # for key in ignore_model_keys:
+        # del state_dict['model'][key]
+
+        # load checkpoint
         missing_keys, unexpected_keys = self.model.load_state_dict(state_dict['model'], strict=strict)
         if len(missing_keys) > 0:
             logger.warning(f"Found these missing keys in the checkpoint: {', '.join(missing_keys)}")
