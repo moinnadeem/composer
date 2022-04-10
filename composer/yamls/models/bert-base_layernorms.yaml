@@ -12,20 +12,26 @@ train_dataset:
     seed: 17
     shuffle: true
     drop_last: true
-val_dataset:
-  streaming_lm:
-    dataset_name: c4
-    dataset_config_name: en
-    split: validation
-    max_samples: 32000 # there's a bug, this is currently per-device
-    max_seq_len: 128
-    group_method: truncate # TODO: check that the code for this one is right
-    tokenizer_name: bert-base-uncased
-    use_masked_lm: true # TODO: check that the code for this one is right
-    mlm_probability: 0.15
-    seed: 17
-    shuffle: false
-    drop_last: true
+evaluators:
+  evaluator:
+    label: bert_pre_training
+    eval_dataset:
+      streaming_lm:
+        dataset_name: c4
+        dataset_config_name: en
+        split: validation
+        max_samples: 32000 # there's a bug, this is currently per-device 
+        max_seq_len: 128 
+        group_method: truncate # TODO: check that the code for this one is right
+        tokenizer_name: bert-base-uncased 
+        use_masked_lm: true # TODO: check that the code for this one is right
+        mlm_probability: 0.15
+        seed: 17
+        shuffle: false
+        drop_last: true
+    metric_names:
+      - LanguageCrossEntropy
+      - MaskedAccuracy
 model:
   bert:
     use_pretrained: false
@@ -50,7 +56,7 @@ loggers:
       buffer_size: 1
       flush_interval: 100
       log_interval: 100
-max_duration: 1000ba  # Baseline is 256M samples, 7 epochs is ~280M samples
+max_duration: 750ba  # Baseline is 256M samples, 7 epochs is ~280M samples
 log_level: INFO
 train_batch_size: 4000
 eval_batch_size: 2000
@@ -67,6 +73,5 @@ grad_accum: 1
 precision: amp
 grad_clip_norm: None
 validate_every_n_batches: 1000
-validate_every_n_epochs: 1
 save_folder: bert_checkpoints
 save_interval: "1ep"
