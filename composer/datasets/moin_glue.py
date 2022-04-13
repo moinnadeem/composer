@@ -14,8 +14,8 @@
 # limitations under the License.
 
 # Lint as: python3
-"""The General Language Understanding Evaluation (GLUE) benchmark."""
 
+"""The General Language Understanding Evaluation (GLUE) benchmark."""
 
 import csv
 import os
@@ -24,7 +24,6 @@ import textwrap
 import numpy as np
 
 import datasets
-
 
 _GLUE_CITATION = """\
 @inproceedings{wang2019glue,
@@ -57,6 +56,7 @@ _MNLI_BASE_KWARGS = dict(
     data_dir="MNLI",
     citation=textwrap.dedent(
         """\
+    citation=textwrap.dedent("""\
       @InProceedings{N18-1101,
         author = "Williams, Adina
                   and Nangia, Nikita
@@ -350,6 +350,7 @@ class Glue(datasets.GeneratorBasedBuilder):
             data_url="https://dl.fbaipublicfiles.com/glue/data/RTE.zip",
             data_dir="RTE",
             citation=textwrap.dedent(
+                """\
                 """\
             @inproceedings{dagan2005pascal,
               title={The PASCAL recognising textual entailment challenge},

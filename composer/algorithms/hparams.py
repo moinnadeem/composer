@@ -6,6 +6,7 @@ from typing import Optional
 
 import yahp as hp
 
+from composer.algorithms.act_fn_search import ActFnSearch
 from composer.algorithms.algorithm_hparams import AlgorithmHparams
 from composer.algorithms.alibi import Alibi
 from composer.algorithms.augmix import AugMix
@@ -32,6 +33,17 @@ from composer.algorithms.stochastic_depth.stochastic_depth import (_STOCHASTIC_L
                                                                    _validate_stochastic_hparams)
 from composer.algorithms.swa import SWA
 
+@dataclass
+class ActFnSearchHparams(AlgorithmHparams):
+    """See :class:`Primer`"""
+    act_fn_name: str = hp.required("The name of the activation function to use.")
+    use_gated: bool = hp.required("Whether to use a GLU unit or a regular unit.")
+    use_rmsnorm: bool = hp.required("Whether to use RMSNorm instead of LayerNorm.")
+    use_fln: bool = hp.required("Whether to use fused layernorms.")
+    use_triton: bool = hp.required("Whether to use fused layernorms.")
+
+    def initialize_object(self) -> "Primer":
+        return ActFnSearch(**asdict(self))
 
 @dataclass
 class AlibiHparams(AlgorithmHparams):
@@ -209,8 +221,9 @@ class LayerFreezingHparams(AlgorithmHparams):
 class MixUpHparams(AlgorithmHparams):
     """See :class:`MixUp`"""
 
-    num_classes: int = hp.required('Number of classes in the task labels.')
     alpha: float = hp.optional('Strength of interpolation, should be >= 0. No interpolation if alpha=0.', default=0.2)
+    interpolate_loss: bool = hp.optional('Use index labels and interpolate the loss instead of the labels.',
+                                         default=False)
 
     def initialize_object(self) -> MixUp:
         return MixUp(**asdict(self))
