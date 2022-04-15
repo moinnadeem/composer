@@ -320,6 +320,7 @@ class State(Serializable):
             strict (bool): Whether the keys (i.e., model parameter names) in the model state dict should
                 perfectly match the keys in the model instance.
         """
+        state_dict = _ensure_backwards_compatible_checkpointing(state_dict)
         if state_dict.get("is_model_ddp", False) and not self.is_model_ddp:
             # This check is for backwards compatibility, as pre-v0.6.0 checkpoints serialized the state
             # with the `module.` prefix
