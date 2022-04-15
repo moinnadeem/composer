@@ -1,0 +1,6 @@
+name: moin-interactive 
+instance: r1z1-g8-a100
+image: mosaicml/pytorch_internal:moin
+algorithms: []
+git_repo: https://github.com/mosaicml/composer.git
+git_branch: dev 
