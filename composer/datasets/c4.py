@@ -10,10 +10,13 @@ import logging
 from dataclasses import dataclass
 from functools import partial
 from itertools import chain, cycle
+from typing import List
 
 import yahp as hp
-from torch.utils.data import DataLoader, IterableDataset, get_worker_info
+from torch.utils.data import IterableDataset, get_worker_info
 
+from composer.core.data_spec import DataSpec
+from composer.core.types import Batch
 from composer.datasets.dataloader import DataLoaderHparams
 from composer.datasets.hparams import DatasetHparams
 from composer.utils import dist
@@ -21,6 +24,23 @@ from composer.utils import dist
 log = logging.getLogger(__name__)
 
 __all__ = ["C4Dataset", "C4DatasetHparams"]
+
+
+def _split_dict_fn(batch: Batch, n_microbatches: int) -> List[Batch]:
+    if isinstance(batch, dict):
+        chunked = {k: v.chunk(n_microbatches) for k, v in batch.items()}
+        for k, v in chunked.items():
+            if len(v) != n_microbatches:
+                raise ValueError(
+                    f"Unable to split batch into microbatches. "
+                    f"Key '{k}' has chunked list: {v} with length {len(v)}, but expected length {n_microbatches}. ")
+        microbatches = []
+        for idx in range(n_microbatches):
+            mb = {k: v[idx] for k, v in chunked.items()}
+            microbatches.append(mb)
+        return microbatches
+    else:
+        raise ValueError(f'Expected batch to be of type Dict[str, Tensor], but got {type(batch)}')
 
 
 @dataclass
@@ -45,7 +65,7 @@ class C4DatasetHparams(DatasetHparams):
         seed (int): If ``shuffle=True``, what seed to use for shuffling operations. Default: ``5``.
         drop_last (bool): Whether to drop the last samples for the last batch. Default: ``True``.
     Returns:
-        DataLoader: A PyTorch :class:`~torch.utils.data.DataLoader` object.
+        DataSpec: A :class:`~core.data_spec.DataSpec` object.
     """
 
     split: str = hp.optional("What split of the dataset to use. Either `train` or `validation`.", default=None)
@@ -80,7 +100,7 @@ class C4DatasetHparams(DatasetHparams):
         if self.mlm and self.mlm_probability <= 0:
             raise ValueError("Must provide a positive 'mlm_probability' when using masked language modeling.")
 
-    def initialize_object(self, batch_size: int, dataloader_hparams: DataLoaderHparams) -> DataLoader:
+    def initialize_object(self, batch_size: int, dataloader_hparams: DataLoaderHparams) -> DataSpec:
         try:
             import transformers
         except ImportError:
@@ -105,13 +125,15 @@ class C4DatasetHparams(DatasetHparams):
         collate_fn = transformers.DataCollatorForLanguageModeling(tokenizer=c4_dataset.tokenizer,
                                                                   mlm=self.mlm,
                                                                   mlm_probability=self.mlm_probability)
-
-        return dataloader_hparams.initialize_object(
-            dataset=c4_dataset,  # type: ignore
+        # Return DataSpec
+        return DataSpec(dataloader=dataloader_hparams.initialize_object(
+            dataset=c4_dataset,
             batch_size=batch_size,
             sampler=None,
             drop_last=self.drop_last,
-            collate_fn=collate_fn)
+            collate_fn=collate_fn,
+        ),
+                        split_batch=_split_dict_fn)
 
 
 class C4Dataset(IterableDataset):

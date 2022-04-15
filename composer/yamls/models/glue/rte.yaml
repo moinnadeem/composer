@@ -6,19 +6,14 @@ train_dataset:
     max_seq_length: 256
     shuffle: false
     drop_last: false
-evaluators:
-  - evaluator:
-      label: glue_rte
-      eval_dataset:
-        glue:
-          task: rte
-          tokenizer_name: bert-base-uncased
-          split: validation
-          max_seq_length: 256
-          shuffle: false
-          drop_last: false
-      metric_names:
-        - Accuracy
+val_dataset:
+  glue:
+    task: rte
+    tokenizer_name: bert-base-uncased
+    split: validation
+    max_seq_length: 256
+    shuffle: false
+    drop_last: false
 model:
   bert_classification:
     num_labels: 2

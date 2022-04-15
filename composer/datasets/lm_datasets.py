@@ -8,9 +8,11 @@ from dataclasses import dataclass
 from os.path import join
 from typing import List, Optional, cast
 
+import torch.utils.data
 import yahp as hp
-from torch.utils.data import DataLoader, Dataset
 
+from composer.core import DataSpec
+from composer.core.types import Batch
 from composer.datasets.dataloader import DataLoaderHparams
 from composer.datasets.hparams import DatasetHparams, SyntheticHparamsMixin
 from composer.datasets.synthetic_lm import generate_synthetic_tokenizer, synthetic_hf_dataset_builder
@@ -19,6 +21,15 @@ from composer.utils import MissingConditionalImportError, dist
 __all__ = ["LMDatasetHparams"]
 
 log = logging.getLogger(__name__)
+
+
+def _split_dict_fn(batch: Batch, n_microbatches: int) -> List[Batch]:
+    if isinstance(batch, dict):
+        chunked = {k: v.chunk(n_microbatches) for k, v in batch.items()}
+        num_chunks = len(list(chunked.values())[0])
+        return [{k: v[idx] for k, v in chunked.items()} for idx in range(num_chunks)]
+    else:
+        raise ValueError(f'Expect batch from dataloader to be of type Dict[str, Tensor], but got {type(batch)}')
 
 
 @dataclass
@@ -90,7 +101,7 @@ class LMDatasetHparams(DatasetHparams, SyntheticHparamsMixin):
         if (self.max_seq_length % 8 != 0):
             log.warning("For best hardware acceleration, it is recommended that sequence lengths be multiples of 8.")
 
-    def initialize_object(self, batch_size: int, dataloader_hparams: DataLoaderHparams) -> DataLoader:
+    def initialize_object(self, batch_size: int, dataloader_hparams: DataLoaderHparams) -> DataSpec:
         try:
             import datasets
             import transformers
@@ -176,13 +187,16 @@ class LMDatasetHparams(DatasetHparams, SyntheticHparamsMixin):
                                                                          mlm_probability=self.mlm_probability)
 
         sampler = dist.get_sampler(
-            cast(Dataset, dataset),  # HF datasets do not subclass torch datasets, so this cast is needed
+            cast(torch.utils.data.Dataset,
+                 dataset),  # HF datasets do not subclass torch datasets, so this cast is needed
             drop_last=self.drop_last,
             shuffle=self.shuffle)
 
-        return dataloader_hparams.initialize_object(
-            dataset=dataset,  # type: ignore
+        return DataSpec(dataloader=dataloader_hparams.initialize_object(
+            dataset=cast(torch.utils.data.Dataset, dataset),
             batch_size=batch_size,
             sampler=sampler,
             drop_last=self.drop_last,
-            collate_fn=data_collator)
+            collate_fn=data_collator,
+        ),
+                        split_batch=_split_dict_fn)
