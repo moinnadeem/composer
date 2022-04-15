@@ -77,7 +77,6 @@ filterwarnings = [
     'ignore:SubsetNumBatchesWarning',  # different subsets OK for testing
     'ignore:No optimizer:UserWarning',  # testing defaults
     'ignore:No scheduler:UserWarning',  # testing defaults
-    'ignore::DeprecationWarning:tensorboard',  # ignore tensorboard
 ]
 
 # Coverage
