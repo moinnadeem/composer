@@ -8,7 +8,6 @@ from typing import Callable, Optional, Sequence, Union
 
 import torch
 import torch.utils.data
-from datasets import Dataset
 from PIL import Image
 from torchvision.datasets import VisionDataset
 
