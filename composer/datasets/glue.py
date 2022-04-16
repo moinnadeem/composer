@@ -112,14 +112,9 @@ class GLUEHparams(DatasetHparams, SyntheticHparamsMixin):
         else:
             tokenizer = transformers.AutoTokenizer.from_pretrained(self.tokenizer_name)  #type: ignore (thirdparty)
 
-            log.info(f"Loading {self.task.upper()} on rank ", dist.get_global_rank())
+            log.info(f"Loading {self.task.upper()} on rank {dist.get_global_rank()}")
             download_config = datasets.utils.DownloadConfig(max_retries=self.max_network_retries)
-            cur_directory = os.path.dirname(os.path.realpath(__file__))
-            moin_glue_path_location = os.path.join(cur_directory, "moin_glue.py")
-            dataset = datasets.load_dataset("glue",
-                                            self.task,
-                                            split=self.split,
-                                            download_config=download_config)
+            dataset = datasets.load_dataset("glue", self.task, split=self.split, download_config=download_config)
 
         log.info(f"Starting tokenization step by preprocessing over {self.num_workers} threads!")
         text_column_names = _task_to_keys[self.task]

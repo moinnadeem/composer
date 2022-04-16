@@ -393,7 +393,7 @@ def replace_params_in_optimizer(old_params: Iterable[torch.nn.parameter.Paramete
             raise RuntimeError("old_params and new_params have different lengths.")
 
         if not old_param in param_to_idxs_map:
-            raise RuntimeError(f"Parameter {old_param} of shape {old_param.shape} is missing from the optimizer.")
+            raise RuntimeError(f"Parameter {old_param} is missing from the optimizer.")
 
         group_idx, param_idx = param_to_idxs_map[old_param]
         opt.param_groups[group_idx]["params"][param_idx] = new_param
