@@ -13,7 +13,6 @@ from composer.datasets.imagenet import (Imagenet1kWebDatasetHparams, ImagenetDat
                                         TinyImagenet200WebDatasetHparams)
 from composer.datasets.lm_datasets import LMDatasetHparams
 from composer.datasets.mnist import MNISTDatasetHparams, MNISTWebDatasetHparams
-from composer.datasets.streaming_lm_datasets import StreamingLMDatasetHparams
 
 registry = {
     "ade20k": ADE20kDatasetHparams,
@@ -22,7 +21,6 @@ registry = {
     "cifar10": CIFAR10DatasetHparams,
     "mnist": MNISTDatasetHparams,
     "lm": LMDatasetHparams,
-    "streaming_lm": StreamingLMDatasetHparams,
     "glue": GLUEHparams,
     "coco": COCODatasetHparams,
     "c4": C4DatasetHparams,
