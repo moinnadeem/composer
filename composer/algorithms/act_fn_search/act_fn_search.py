@@ -16,9 +16,9 @@ import yahp as hp
 from apex.normalization.fused_layer_norm import FusedLayerNorm
 from torch.nn.functional import relu
 from tqdm import tqdm
-#from xformers.triton.layer_norm import FusedLayerNorm as TritonLayerNorm
+from xformers.triton.layer_norm import FusedLayerNorm as TritonLayerNorm
 
-from composer.algorithms.act_fn_search.triton_ln import TritonLayerNorm
+# from composer.algorithms.act_fn_search.triton_ln import TritonLayerNorm
 from composer.algorithms import AlgorithmHparams
 from composer.core import Algorithm, Event, State
 from composer.loggers import Logger
@@ -68,12 +68,6 @@ def occumpy_mem(cuda_device):
 
 def apply_act_fn(model: torch.nn.Module, act_fn_name: str, use_gated: bool, use_rmsnorm: bool, use_fln: bool,
                  use_triton: bool) -> None:
-    # cuda_device = dist.get_global_rank()
-    # occumpy_mem(cuda_device)
-    # for _ in tqdm(range(60)):
-    # time.sleep(1)
-    # print('Finished initializing CUDA memory.')
-
     act_fns = {
         "squared_relu": lambda x: relu(x).square(),
         "fast_gelu": transformers.activations.gelu_fast,
@@ -155,7 +149,7 @@ class BERTGatedOutput(torch.nn.Module):
         self.wo = torch.nn.Linear(d_ff, d_embed)
         self.dropout = torch.nn.Dropout(dropout_rate)
         self.act = act_fn
-        self.LayerNorm = torch.nn.LayerNorm(d_embed, eps=layernorm_eps)
+        self.layernorm = torch.nn.LayerNorm(d_embed, eps=layernorm_eps)
 
     def forward(self, hidden_states, input_tensor):
         # compute the activation
@@ -164,7 +158,7 @@ class BERTGatedOutput(torch.nn.Module):
         # multiply by the second matrix
         hidden_states = self.wo(hidden_states)
         # add the residual connection and post-LN
-        hidden_states = self.LayerNorm(hidden_states + input_tensor)
+        hidden_states = self.layernorm(hidden_states + input_tensor)
         return hidden_states
 
 
