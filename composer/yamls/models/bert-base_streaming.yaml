@@ -47,7 +47,6 @@ schedulers:
 loggers:
   - progress_bar: {}
 max_duration: 1ep  # Baseline is 256M samples, 7 epochs is ~280M samples
-log_level: INFO 
 train_batch_size: 4000
 eval_batch_size: 2000
 seed: 19
