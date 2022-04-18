@@ -47,10 +47,11 @@ schedulers:
 loggers:
   - progress_bar: {}
   - object_store:
-      provider: GOOGLE_STORAGE
-      container: moin_bert_checkpoints
-      key_environ: GCE_KEY
-      secret_environ: GCE_SECRET
+      object_store_hparams:
+        provider: GOOGLE_STORAGE
+        container: moin_bert_checkpoints
+        key_environ: GCE_KEY
+        secret_environ: GCE_SECRET
 max_duration: 1ep  # Baseline is 256M samples, 7 epochs is ~280M samples
 train_batch_size: 4000
 eval_batch_size: 2000
