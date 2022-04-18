@@ -24,7 +24,7 @@ command: >-
   composer -n {{ parameters['_n_gpus'] }} examples/run_composer_trainer.py
   -f /mnt/config/parameters.yaml
 
-instance: a2-highgpu-8g-a100-8  # Name of the instance you want to run on, e.g. r1z1-g8-a100
+instance: r1z1-g8-a100  # Name of the instance you want to run on, e.g. r1z1-g8-a100
 run_type: convergence  # Type of run you want to perform (convergence is default and only one support currently)
 algorithms:
   - act_fn_search
