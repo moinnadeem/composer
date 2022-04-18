@@ -64,10 +64,10 @@ dataloader:
   num_workers: 1
   timeout: 0
   prefetch_factor: 2
-grad_accum: 1
+grad_accum: 4
 precision: amp
 grad_clip_norm: None
 validate_every_n_batches: 1000
 validate_every_n_epochs: 1
 save_folder: bert_checkpoints
-save_interval: 3500ba
+save_interval: 50ba
