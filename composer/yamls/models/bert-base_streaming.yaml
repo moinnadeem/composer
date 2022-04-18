@@ -46,6 +46,11 @@ schedulers:
       t_warmup: 0.06dur
 loggers:
   - progress_bar: {}
+  - object_store:
+      provider: GOOGLE_STORAGE
+      container: moin_bert_checkpoints
+      key_environ: GCE_KEY
+      secret_environ: GCE_SECRET
 max_duration: 1ep  # Baseline is 256M samples, 7 epochs is ~280M samples
 train_batch_size: 4000
 eval_batch_size: 2000
@@ -65,8 +70,3 @@ validate_every_n_batches: 1000
 validate_every_n_epochs: 1
 save_folder: bert_checkpoints
 save_interval: 3500ba
-run_directory_uploader:
-  provider: GOOGLE_STORAGE
-  container: moin_bert_checkpoints
-  key_environ: GCE_KEY
-  secret_environ: GCE_SECRET
