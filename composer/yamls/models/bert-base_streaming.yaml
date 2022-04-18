@@ -64,4 +64,9 @@ grad_clip_norm: None
 validate_every_n_batches: 1000
 validate_every_n_epochs: 1
 save_folder: bert_checkpoints
-save_interval: 3500ba 
+save_interval: 3500ba
+run_directory_uploader:
+  provider: GOOGLE_STORAGE
+  container: moin_bert_checkpoints
+  key_environ: GCE_KEY
+  secret_environ: GCE_SECRET
