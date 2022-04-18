@@ -9,10 +9,6 @@ command: >-
 
   pip install wheel
 
-  export GCE_KEY="GOOG7U7OGT4CLTOGNYBDXM4Q"
-
-  export GCE_SECRET="ZCphgyzONAk0+FYmQn9eOvUffNZlgKPmDj0KuT6P"
-
   git clone {{ git_repo }} /root/composer
 
   cd /root/composer
