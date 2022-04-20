@@ -3,7 +3,6 @@ train_dataset:
     dataset_name: c4
     dataset_config_name: en
     split: train
-    max_shards: -1
     max_samples: 275184000 
     max_seq_len: 128 
     group_method: truncate # TODO: check that the code for this one is right
@@ -13,21 +12,26 @@ train_dataset:
     seed: 17
     shuffle: true
     drop_last: true
-val_dataset:
-  streaming_lm:
-    dataset_name: c4
-    dataset_config_name: en
-    split: validation
-    max_shards: -1
-    max_samples: 32000 # there's a bug, this is currently per-device 
-    max_seq_len: 128 
-    group_method: truncate # TODO: check that the code for this one is right
-    tokenizer_name: bert-base-uncased 
-    use_masked_lm: true # TODO: check that the code for this one is right
-    mlm_probability: 0.15
-    seed: 17
-    shuffle: false
-    drop_last: true
+evaluators:
+  evaluator:
+    label: bert_pre_training
+    eval_dataset:
+      streaming_lm:
+        dataset_name: c4
+        dataset_config_name: en
+        split: validation
+        max_samples: 32000 # there's a bug, this is currently per-device 
+        max_seq_len: 128 
+        group_method: truncate # TODO: check that the code for this one is right
+        tokenizer_name: bert-base-uncased 
+        use_masked_lm: true # TODO: check that the code for this one is right
+        mlm_probability: 0.15
+        seed: 17
+        shuffle: false
+        drop_last: true
+    metric_names:
+      - LanguageCrossEntropy
+      - MaskedAccuracy
 model:
   bert:
     use_pretrained: false
@@ -43,15 +47,15 @@ optimizer:
     weight_decay: 1.0e-5
 schedulers:
   - linear_decay_with_warmup:
-      warmup_time: 0.06dur
+      t_warmup: 0.06dur
 loggers:
+  - progress_bar: {}
   - file:
       log_level: batch 
       filename: stdout
       buffer_size: 1
       flush_interval: 100
       log_interval: 100
-  - tqdm: {}
 max_duration: 1ep  # Baseline is 256M samples, 7 epochs is ~280M samples
 log_level: INFO 
 train_batch_size: 4000
@@ -65,7 +69,7 @@ dataloader:
   num_workers: 1
   timeout: 0
   prefetch_factor: 2
-grad_accum: 100
+grad_accum: 1
 precision: amp
 grad_clip_norm: None
 validate_every_n_batches: 1000

@@ -18,6 +18,7 @@ def get_norm(neox_args):
 
 
 class RMSNorm(torch.nn.Module):
+
     def __init__(self, dim, p=-1.0, eps=1e-8, bias=False):
         """
             Root Mean Square Layer Normalization
@@ -52,7 +53,7 @@ class RMSNorm(torch.nn.Module):
             norm_x = partial_x.norm(2, dim=-1, keepdim=True)
             d_x = partial_size
 
-        rms_x = norm_x * d_x ** (-1.0 / 2)
+        rms_x = norm_x * d_x**(-1.0 / 2)
         x_normed = x / (rms_x + self.eps)
 
         if self.bias:
@@ -62,6 +63,7 @@ class RMSNorm(torch.nn.Module):
 
 
 class ScaleNorm(torch.nn.Module):
+
     def __init__(self, dim, eps=1e-5):
         super().__init__()
         self.g = torch.nn.Parameter(torch.ones(1))

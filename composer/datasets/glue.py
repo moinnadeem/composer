@@ -21,12 +21,11 @@ from dataclasses import dataclass
 from typing import cast
 
 import yahp as hp
+from torch.utils.data import DataLoader
 
-from composer.core import DataSpec
 from composer.core.types import Dataset
 from composer.datasets.dataloader import DataLoaderHparams
 from composer.datasets.hparams import DatasetHparams, SyntheticHparamsMixin
-from composer.datasets.lm_datasets import _split_dict_fn
 from composer.datasets.synthetic_lm import generate_synthetic_tokenizer, synthetic_hf_dataset_builder
 from composer.utils import MissingConditionalImportError, dist
 
@@ -64,7 +63,7 @@ class GLUEHparams(DatasetHparams, SyntheticHparamsMixin):
             they fail. Default: ``10``.
 
     Returns:
-       DataSpec: A :class:`~composer.core.DataSpec` object.
+        DataLoader: A PyTorch :class:`~torch.utils.data.DataLoader` object.
     """
 
     task: str = hp.optional(
@@ -91,7 +90,7 @@ class GLUEHparams(DatasetHparams, SyntheticHparamsMixin):
         if self.split is None:
             raise ValueError("A dataset split must be specified.")
 
-    def initialize_object(self, batch_size: int, dataloader_hparams: DataLoaderHparams) -> DataSpec:
+    def initialize_object(self, batch_size: int, dataloader_hparams: DataLoaderHparams) -> DataLoader:
         # TODO (Moin): I think this code is copied verbatim in a few different places. Move this into a function.
         try:
             import datasets
@@ -113,14 +112,9 @@ class GLUEHparams(DatasetHparams, SyntheticHparamsMixin):
         else:
             tokenizer = transformers.AutoTokenizer.from_pretrained(self.tokenizer_name)  #type: ignore (thirdparty)
 
-            log.info(f"Loading {self.task.upper()} on rank ", dist.get_global_rank())
+            log.info(f"Loading {self.task.upper()} on rank {dist.get_global_rank()}")
             download_config = datasets.utils.DownloadConfig(max_retries=self.max_network_retries)
-            cur_directory = os.path.dirname(os.path.realpath(__file__))
-            moin_glue_path_location = os.path.join(cur_directory, "moin_glue.py")
-            dataset = datasets.load_dataset(moin_glue_path_location,
-                                            self.task,
-                                            split=self.split,
-                                            download_config=download_config)
+            dataset = datasets.load_dataset("glue", self.task, split=self.split, download_config=download_config)
 
         log.info(f"Starting tokenization step by preprocessing over {self.num_workers} threads!")
         text_column_names = _task_to_keys[self.task]
@@ -154,12 +148,9 @@ class GLUEHparams(DatasetHparams, SyntheticHparamsMixin):
         data_collator = transformers.default_data_collator
         sampler = dist.get_sampler(cast(Dataset, dataset), drop_last=self.drop_last, shuffle=self.shuffle)
 
-        return DataSpec(
-            dataloader=dataloader_hparams.initialize_object(
-                dataset=dataset,  #type: ignore (thirdparty)
-                batch_size=batch_size,
-                sampler=sampler,
-                drop_last=self.drop_last,
-                collate_fn=data_collator,
-            ),
-            split_batch=_split_dict_fn)
+        return dataloader_hparams.initialize_object(
+            dataset=dataset,  #type: ignore (thirdparty)
+            batch_size=batch_size,
+            sampler=sampler,
+            drop_last=self.drop_last,
+            collate_fn=data_collator)

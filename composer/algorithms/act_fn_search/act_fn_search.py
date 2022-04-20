@@ -16,7 +16,9 @@ import yahp as hp
 from apex.normalization.fused_layer_norm import FusedLayerNorm
 from torch.nn.functional import relu
 from tqdm import tqdm
+#from xformers.triton.layer_norm import FusedLayerNorm as TritonLayerNorm
 
+from composer.algorithms.act_fn_search.triton_ln import TritonLayerNorm
 from composer.algorithms import AlgorithmHparams
 from composer.core import Algorithm, Event, State
 from composer.loggers import Logger
@@ -34,6 +36,7 @@ class ActFnSearchHparams(AlgorithmHparams):
     use_gated: bool = hp.required("Whether to use a GLU unit or a regular unit.")
     use_rmsnorm: bool = hp.required("Whether to use RMSNorm instead of LayerNorm.")
     use_fln: bool = hp.required("Whether to use fused layernorms.")
+    use_triton: bool = hp.required("Whether to use fused layernorms.")
 
     def initialize_object(self) -> "Primer":
         return ActFnSearch(**asdict(self))
@@ -63,7 +66,8 @@ def occumpy_mem(cuda_device):
     del x
 
 
-def apply_act_fn(model: torch.nn.Module, act_fn_name: str, use_gated: bool, use_rmsnorm: bool, use_fln: bool) -> None:
+def apply_act_fn(model: torch.nn.Module, act_fn_name: str, use_gated: bool, use_rmsnorm: bool, use_fln: bool,
+                 use_triton: bool) -> None:
     # cuda_device = dist.get_global_rank()
     # occumpy_mem(cuda_device)
     # for _ in tqdm(range(60)):
@@ -115,9 +119,18 @@ def apply_act_fn(model: torch.nn.Module, act_fn_name: str, use_gated: bool, use_
         policy = {torch.nn.LayerNorm: lambda x, module_index: RMSNorm(dim=d_embed, eps=layernorm_eps)}
         module_surgery.replace_module_classes(module=model, policies=policy)
 
+    if use_fln and use_triton:
+        raise ValueError("Cannot use both FLN and OneFlow!")
+
     if use_fln:
         policy = {
             torch.nn.LayerNorm: lambda x, module_index: FusedLayerNorm(normalized_shape=d_embed, eps=layernorm_eps)
+        }
+        module_surgery.replace_module_classes(module=model, policies=policy)
+
+    if use_triton:
+        policy = {
+            torch.nn.LayerNorm: lambda x, module_index: TritonLayerNorm(normalized_shape=d_embed, eps=layernorm_eps)
         }
         module_surgery.replace_module_classes(module=model, policies=policy)
 
@@ -157,11 +170,12 @@ class BERTGatedOutput(torch.nn.Module):
 
 class ActFnSearch(Algorithm):
 
-    def __init__(self, act_fn_name: str, use_gated: bool, use_rmsnorm: bool, use_fln: bool) -> None:
+    def __init__(self, act_fn_name: str, use_gated: bool, use_rmsnorm: bool, use_fln: bool, use_triton: bool) -> None:
         self.act_fn_name = act_fn_name
         self.use_gated = use_gated
         self.use_rmsnorm = use_rmsnorm
         self.use_fln = use_fln
+        self.use_triton = use_triton
 
     def match(self, event: Event, state: State) -> bool:
         """ Runs on Event.INIT
@@ -178,4 +192,5 @@ class ActFnSearch(Algorithm):
                          act_fn_name=self.act_fn_name,
                          use_gated=self.use_gated,
                          use_rmsnorm=self.use_rmsnorm,
-                         use_fln=self.use_fln)
+                         use_fln=self.use_fln,
+                         use_triton=self.use_triton)
