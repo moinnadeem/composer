@@ -3,22 +3,18 @@
 from __future__ import annotations
 
 import logging
-import math
 import os
-import time
 from dataclasses import asdict, dataclass
-from types import MethodType, ModuleType
-from typing import Any, Callable, List, Optional, Union
+from typing import Sequence, Optional, Union
 
 import torch
 import transformers
 import yahp as hp
 from apex.normalization.fused_layer_norm import FusedLayerNorm
 from torch.nn.functional import relu
-from tqdm import tqdm
+from transformers.models.bert.modeling_bert import BertIntermediate, BertOutput
 from xformers.triton.layer_norm import FusedLayerNorm as TritonLayerNorm
 
-# from composer.algorithms.act_fn_search.triton_ln import TritonLayerNorm
 from composer.algorithms import AlgorithmHparams
 from composer.core import Algorithm, Event, State
 from composer.loggers import Logger
@@ -66,8 +62,8 @@ def occumpy_mem(cuda_device):
     del x
 
 
-def apply_act_fn(model: torch.nn.Module, act_fn_name: str, use_gated: bool, use_rmsnorm: bool, use_fln: bool,
-                 use_triton: bool) -> None:
+def apply_act_fn(model: torch.nn.Module, optimizers: Union[torch.optim.Optimizer, Sequence[torch.optim.Optimizer]],
+                 act_fn_name: str, use_gated: bool, use_rmsnorm: bool, use_fln: bool, use_triton: bool) -> None:
     act_fns = {
         "squared_relu": lambda x: relu(x).square(),
         "fast_gelu": transformers.activations.gelu_fast,
@@ -78,40 +74,48 @@ def apply_act_fn(model: torch.nn.Module, act_fn_name: str, use_gated: bool, use_
     }
     act_fn = act_fns[act_fn_name]
 
+    # get new parameter values
+    d_ffs = []
     d_embeds = []
     layernorm_eps = []
+    dropout_rates = []
+    act_fns = []
     for idx in range(len(model.module.bert.encoder.layer)):
         bert_layer = model.module.bert.encoder.layer[idx]
+        d_ffs.append(bert_layer.intermediate.dense.out_features)
         d_embeds.append(bert_layer.intermediate.dense.in_features)
         layernorm_eps.append(bert_layer.output.LayerNorm.eps)
-    assert len(set(d_embeds)) == 1
-    assert len(set(layernorm_eps)) == 1
+        dropout_rates.append(bert_layer.output.dropout.p)
+        act_fns.append(bert_layer.intermediate.intermediate_act_fn)
+
+    for l in [d_ffs, d_embeds, layernorm_eps, dropout_rates, act_fns]:
+        assert len(set(l)) == 1
+
+    d_ff = d_ffs[0]
+    d_ff = round((2.0 / 3.0) * d_ff)  # scale down d_ff by 1/3 in order to maintain equal number of parameters
     d_embed = d_embeds[0]
     layernorm_eps = layernorm_eps[0]
+    dropout_rate = dropout_rates[0]
+    if act_fn is None:
+        act_fn = act_fns[0]
 
-    if act_fn is not None:
-        if not use_gated:
-            for idx in range(len(model.module.bert.encoder.layer)):
-                model.module.bert.encoder.layer[idx].intermediate.intermediate_act_fn = act_fn
-        else:
-            for idx in range(len(model.module.bert.encoder.layer)):
-                # TODO: implement ReLU, GeLU, GEGeLU, ReGLU, and SwiGLU
-                d_embed = model.module.bert.encoder.layer[idx].intermediate.dense.in_features
-                d_ff = model.module.bert.encoder.layer[idx].intermediate.dense.out_features
-                # scale down d_ff by 1/3 in order to maintain equal number of parameters
-                d_ff = round((2.0 / 3.0) * d_ff)
-                dropout_rate = model.module.bert.encoder.layer[idx].output.dropout.p
-                layernorm_eps = model.module.bert.encoder.layer[idx].output.LayerNorm.eps
-                model.module.bert.encoder.layer[idx].intermediate = DummyBERTIntermediateOutput()
-                model.module.bert.encoder.layer[idx].output = BERTGatedOutput(d_embed=d_embed,
-                                                                              d_ff=d_ff,
-                                                                              dropout_rate=dropout_rate,
-                                                                              act_fn=act_fn,
-                                                                              layernorm_eps=layernorm_eps)
+    if act_fn is not None and not use_gated:
+        for idx in range(len(model.module.bert.encoder.layer)):
+            model.module.bert.encoder.layer[idx].intermediate.intermediate_act_fn = act_fn
+
+    if use_gated:
+        policy = {
+            BertIntermediate:
+                lambda x, module_index: DummyBERTIntermediateOutput(),
+            BertOutput:
+                lambda x, module_index: BERTGatedOutput(
+                    d_embed=d_embed, d_ff=d_ff, dropout_rate=dropout_rate, act_fn=act_fn, layernorm_eps=layernorm_eps)
+        }
+        module_surgery.replace_module_classes(module=model, optimizers=optimizers, policies=policy)
 
     if use_rmsnorm:
         policy = {torch.nn.LayerNorm: lambda x, module_index: RMSNorm(dim=d_embed, eps=layernorm_eps)}
-        module_surgery.replace_module_classes(module=model, policies=policy)
+        module_surgery.replace_module_classes(module=model, optimizers=optimizers, policies=policy)
 
     if use_fln and use_triton:
         raise ValueError("Cannot use both FLN and OneFlow!")
@@ -120,13 +124,13 @@ def apply_act_fn(model: torch.nn.Module, act_fn_name: str, use_gated: bool, use_
         policy = {
             torch.nn.LayerNorm: lambda x, module_index: FusedLayerNorm(normalized_shape=d_embed, eps=layernorm_eps)
         }
-        module_surgery.replace_module_classes(module=model, policies=policy)
+        module_surgery.replace_module_classes(module=model, optimizers=optimizers, policies=policy)
 
     if use_triton:
         policy = {
             torch.nn.LayerNorm: lambda x, module_index: TritonLayerNorm(normalized_shape=d_embed, eps=layernorm_eps)
         }
-        module_surgery.replace_module_classes(module=model, policies=policy)
+        module_surgery.replace_module_classes(module=model, optimizers=optimizers, policies=policy)
 
     print(model)
 
@@ -183,6 +187,7 @@ class ActFnSearch(Algorithm):
         if event == Event.INIT:
             assert state.model is not None
             apply_act_fn(state.model,
+                         optimizers=state.optimizers,
                          act_fn_name=self.act_fn_name,
                          use_gated=self.use_gated,
                          use_rmsnorm=self.use_rmsnorm,
