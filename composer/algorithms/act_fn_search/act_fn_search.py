@@ -5,9 +5,10 @@ from __future__ import annotations
 import logging
 import os
 from dataclasses import asdict, dataclass
-from typing import Sequence, Optional, Union
+from typing import Optional, Sequence, Union
 
 import torch
+import torch.nn.functional as F
 import transformers
 import yahp as hp
 from torch.nn.functional import relu
@@ -41,11 +42,9 @@ class ActFnSearchHparams(AlgorithmHparams):
         return ActFnSearch(**asdict(self))
 
 
+@torch.jit.script
 def squared_relu(x):
-    x = relu(x)
-    mask = x > 0
-    x[mask] = x[mask].square().half()
-    return x
+    return F.relu(x)**2
 
 
 def check_mem(cuda_device):
@@ -68,10 +67,10 @@ def occumpy_mem(cuda_device):
 def apply_act_fn(model: torch.nn.Module, optimizers: Union[torch.optim.Optimizer, Sequence[torch.optim.Optimizer]],
                  act_fn_name: str, use_gated: bool, use_rmsnorm: bool, use_fln: bool, use_triton: bool) -> None:
     act_fns = {
-        "squared_relu": lambda x: relu(x).square(),
+        "squared_relu": squared_relu,
         "fast_gelu": transformers.activations.gelu_fast,
         "gelu": torch.nn.functional.gelu,
-        "relu": relu,
+        "relu": torch.nn.ReLU(),
         "swish": transformers.activations.silu,
         "no_replacement": None,
     }
@@ -136,6 +135,22 @@ def apply_act_fn(model: torch.nn.Module, optimizers: Union[torch.optim.Optimizer
         module_surgery.replace_module_classes(module=model, optimizers=optimizers, policies=policy)
 
     print(model)
+
+
+class SquaredReLU(torch.nn.Module):
+    __constants__ = ['inplace']
+    inplace: bool
+
+    def __init__(self, inplace: bool = False):
+        super(SquaredReLU, self).__init__()
+        self.inplace = inplace
+
+    def forward(self, input):
+        return F.relu(input, inplace=self.inplace)**2
+
+    def extra_repr(self) -> str:
+        inplace_str = 'inplace=True' if self.inplace else ''
+        return inplace_str
 
 
 class DummyBERTIntermediateOutput(torch.nn.Module):

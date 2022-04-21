@@ -46,6 +46,7 @@ schedulers:
       t_warmup: 0.06dur
 loggers:
   - progress_bar: {}
+  - wandb: {}
   - object_store:
       object_store_hparams:
         provider: GOOGLE_STORAGE
