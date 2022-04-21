@@ -1,29 +1,33 @@
 train_dataset:
-  c4:
+  streaming_lm:
+    dataset_name: c4
+    dataset_config_name: en
     split: train
-    num_samples: 275184000 
-    tokenizer_name: bert-base-uncased
-    max_seq_len: 128 
+    max_samples: 275184000
+    max_seq_len: 128
     group_method: truncate # TODO: check that the code for this one is right
-    mlm: true # TODO: check that the code for this one is right 
+    tokenizer_name: bert-base-uncased
+    use_masked_lm: true # TODO: check that the code for this one is right 
     mlm_probability: 0.15
-    shuffle: true
     seed: 17
+    shuffle: true
     drop_last: true
 evaluators:
   evaluator:
     label: bert_pre_training
     eval_dataset:
-      c4:
+      streaming_lm:
+        dataset_name: c4
+        dataset_config_name: en
         split: validation
-        num_samples: 32000 # there's a bug, this is currently per-device 
-        tokenizer_name: bert-base-uncased 
-        max_seq_len: 128 
+        max_samples: 32000 # there's a bug, this is currently per-device 
+        max_seq_len: 128
         group_method: truncate # TODO: check that the code for this one is right
-        mlm: true # TODO: check that the code for this one is right
+        tokenizer_name: bert-base-uncased 
+        use_masked_lm: true # TODO: check that the code for this one is right
         mlm_probability: 0.15
-        shuffle: false
         seed: 17
+        shuffle: false
         drop_last: true
     metric_names:
       - LanguageCrossEntropy
@@ -47,12 +51,6 @@ schedulers:
 loggers:
   - progress_bar: {}
   - wandb: {}
-  - object_store:
-      object_store_hparams:
-        provider: GOOGLE_STORAGE
-        container: moin_bert_checkpoints
-        key_environ: GCS_KEY
-        secret_environ: GCS_SECRET
 max_duration: 1ep  # Baseline is 256M samples, 7 epochs is ~280M samples
 train_batch_size: 4000
 eval_batch_size: 2000
@@ -70,5 +68,5 @@ precision: amp
 grad_clip_norm: None
 validate_every_n_batches: 1000
 validate_every_n_epochs: 1
-save_folder: bert_checkpoints
-save_interval: 3500ba
+#save_folder: bert_checkpoints
+#save_interval: 3500ba
