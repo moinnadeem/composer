@@ -10,10 +10,13 @@ from typing import Sequence, Optional, Union
 import torch
 import transformers
 import yahp as hp
-from apex.normalization.fused_layer_norm import FusedLayerNorm
 from torch.nn.functional import relu
 from transformers.models.bert.modeling_bert import BertIntermediate, BertOutput
-from xformers.triton.layer_norm import FusedLayerNorm as TritonLayerNorm
+try:
+    from apex.normalization.fused_layer_norm import FusedLayerNorm
+    from xformers.triton.layer_norm import FusedLayerNorm as TritonLayerNorm
+except ImportError as e:
+    print(e)
 
 from composer.algorithms import AlgorithmHparams
 from composer.core import Algorithm, Event, State

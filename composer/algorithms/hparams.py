@@ -33,6 +33,7 @@ from composer.algorithms.stochastic_depth.stochastic_depth import (_STOCHASTIC_L
                                                                    _validate_stochastic_hparams)
 from composer.algorithms.swa import SWA
 
+
 @dataclass
 class ActFnSearchHparams(AlgorithmHparams):
     """See :class:`Primer`"""
