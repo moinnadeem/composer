@@ -1,0 +1,55 @@
+train_dataset:
+  c4:
+    split: train
+    num_samples: 275184000 
+    tokenizer_name: bert-base-uncased
+    max_seq_len: 128 
+    group_method: truncate # TODO: check that the code for this one is right
+    mlm: true # TODO: check that the code for this one is right 
+    mlm_probability: 0.15
+    shuffle: true
+    seed: 17
+    drop_last: true
+model:
+  bert:
+    use_pretrained: false
+    tokenizer_name: bert-base-uncased
+    pretrained_model_name: bert-base-uncased
+optimizer:
+  decoupled_adamw:
+    lr: 5.0e-4
+    betas:
+      - 0.9
+      - 0.98
+    eps: 1.0e-06
+    weight_decay: 1.0e-5
+schedulers:
+  - linear_decay_with_warmup:
+      t_warmup: 0.06dur
+loggers:
+  - progress_bar: {}
+  - wandb: {}
+  - object_store:
+      object_store_hparams:
+        provider: GOOGLE_STORAGE
+        container: moin_bert_checkpoints
+        key_environ: GCS_KEY
+        secret_environ: GCS_SECRET
+max_duration: 1ep  # Baseline is 256M samples, 7 epochs is ~280M samples
+train_batch_size: 4000
+eval_batch_size: 2000
+seed: 19
+device:
+  gpu: {}
+dataloader:
+  pin_memory: true
+  persistent_workers: true
+  num_workers: 1
+  timeout: 0
+  prefetch_factor: 2
+grad_accum: 8
+precision: amp
+grad_clip_norm: None
+save_folder: bert_checkpoints
+save_interval: 3500ba
+train_subset_num_batches: 100

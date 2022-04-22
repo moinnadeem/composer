@@ -239,7 +239,8 @@ class C4Dataset(IterableDataset):
 
         # Repeat over the dataset
         # TODO: This functionality should eventually be upstreamed to HF as `hf_iterable_dataset.repeat()`
-        repeat_token_dataset = self._repeat(token_dataset)
+        # repeat_token_dataset = self._repeat(token_dataset)
+        repeat_token_dataset = token_dataset
 
         # Limit the number of post-processed token samples
         sized_token_dataset = repeat_token_dataset.take(self.num_samples_per_device)
