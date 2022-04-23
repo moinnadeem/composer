@@ -1,11 +1,15 @@
 ---
 name: bert-pareto-curves  # Name of the sweep - it'll be used in run names
 project: bert-pareto-curves  # Name of the Weights and Biases project to use
-image: mosaicml/moin:latest  # Name of the docker image to use
+image: mosaicml/pytorch_internal:moin  # Name of the docker image to use
 git_repo: https://github.com/moinnadeem/composer.git  # Name of the git repo to clone - can be full URL or path under github.com
 git_branch: moin/cleaned_gated  # Name of the git branch/tag/commit to use
 command: >-
-  source ~/env/bin/activate
+  git clone https://github.com/moinnadeem/apex /root/apex
+
+  cd /root/apex
+
+  pip install --user -v --disable-pip-version-check --no-cache-dir --global-option="--cpp_ext" --global-option="--cuda_ext" ./
 
   pip install wheel
 
@@ -19,11 +23,10 @@ command: >-
 
   git checkout {{ git_branch }}
 
-  pip install -e ".[all]"
+  pip install --user -e ".[all]"
 
   composer -n {{ parameters['_n_gpus'] }} examples/run_composer_trainer.py
-  -f /mnt/config/parameters.yaml
-
+  -f /mnt/config/parameters.yaml --run_name $(WANDB_NAME)
 instance: r1z1-g8-a100  # Name of the instance you want to run on, e.g. r1z1-g8-a100
 run_type: convergence  # Type of run you want to perform (convergence is default and only one support currently)
 algorithms:
@@ -42,6 +45,7 @@ parameters:  # Any parameter overrides you want to use IN EVERY RUN should be sp
 grid:
   algorithms.act_fn_search.act_fn_name:
     - squared_relu
-    - relu
-    - gelu
-    - swish
+    #- relu
+    #- gelu
+    #- swish
+named_like: bert-{{ search['algorithms.act_fn_search.act_fn_name'] }}-gated
