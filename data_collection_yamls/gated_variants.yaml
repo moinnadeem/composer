@@ -45,7 +45,7 @@ parameters:  # Any parameter overrides you want to use IN EVERY RUN should be sp
 grid:
   algorithms.act_fn_search.act_fn_name:
     - squared_relu
-    #- relu
-    #- gelu
-    #- swish
+    - relu
+    - gelu
+    - swish
 named_like: bert-{{ search['algorithms.act_fn_search.act_fn_name'] }}-gated
