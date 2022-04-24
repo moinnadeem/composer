@@ -1,29 +1,33 @@
 train_dataset:
-  c4:
+  streaming_lm:
+    dataset_name: c4
+    dataset_config_name: en
     split: train
-    num_samples: 275184000 
-    tokenizer_name: bert-base-uncased
-    max_seq_len: 128 
+    max_samples: 275184000
+    max_seq_len: 128
     group_method: truncate # TODO: check that the code for this one is right
-    mlm: true # TODO: check that the code for this one is right 
+    tokenizer_name: bert-base-uncased
+    use_masked_lm: true # TODO: check that the code for this one is right
     mlm_probability: 0.15
-    shuffle: true
     seed: 17
+    shuffle: true
     drop_last: true
 evaluators:
   evaluator:
     label: bert_pre_training
     eval_dataset:
-      c4:
+      streaming_lm:
+        dataset_name: c4
+        dataset_config_name: en
         split: validation
-        num_samples: 32000 # there's a bug, this is currently per-device 
-        tokenizer_name: bert-base-uncased 
-        max_seq_len: 128 
+        max_samples: 32000 # there's a bug, this is currently per-device
+        max_seq_len: 128
         group_method: truncate # TODO: check that the code for this one is right
-        mlm: true # TODO: check that the code for this one is right
+        tokenizer_name: bert-base-uncased
+        use_masked_lm: true # TODO: check that the code for this one is right
         mlm_probability: 0.15
-        shuffle: false
         seed: 17
+        shuffle: false
         drop_last: true
     metric_names:
       - LanguageCrossEntropy
