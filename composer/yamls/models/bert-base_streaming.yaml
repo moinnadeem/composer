@@ -48,6 +48,7 @@ optimizer:
 schedulers:
   - linear_decay_with_warmup:
       t_warmup: 0.06dur
+      alpha_f: 0.02
 loggers:
   - progress_bar: {}
   - wandb: {}
