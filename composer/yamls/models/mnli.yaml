@@ -19,7 +19,7 @@ evaluators:
           drop_last: false
       metric_names:
         - Accuracy
-  - evaluator:
+  - evaluator+1:
       label: glue_mnli_mismatched
       eval_dataset:
         glue:
@@ -44,11 +44,11 @@ optimizer:
       - 0.9
       - 0.98
     eps: 1.0e-06
-    weight_decay: 5.0e-6
+    weight_decay: 1.0e-6
 schedulers:
   - linear_decay_with_warmup:
       t_warmup: 0.06dur
-max_duration: 3ep
+max_duration: 5ep
 train_batch_size: 48
 eval_batch_size: 48
 seed: 19
