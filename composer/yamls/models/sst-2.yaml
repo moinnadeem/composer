@@ -32,11 +32,11 @@ optimizer:
       - 0.9
       - 0.98
     eps: 1.0e-06
-    weight_decay: 3.0e-6
+    weight_decay: 0
 schedulers:
   - linear_decay_with_warmup:
       t_warmup: 0.06dur
-max_duration: 3ep
+max_duration: 5ep
 train_batch_size: 16
 eval_batch_size: 16
 seed: 19
@@ -48,6 +48,9 @@ dataloader:
   num_workers: 8
   timeout: 0
   prefetch_factor: 2
+loggers:
+  - progress_bar: {}
+  - wandb: {}
 grad_accum: 1
 precision: amp
 grad_clip_norm: None
