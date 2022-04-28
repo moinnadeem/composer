@@ -828,7 +828,7 @@ class Trainer:
                 ))
 
         self.logger = Logger(state=self.state, destinations=loggers, run_name=run_name)
-        self.state.callbacks = list(cast(List[Callback], loggers)) + self.state.callbacks
+        self.state.callbacks = list(cast(List[Callback], loggers)) + list(cast(List[Callback], self.evaluators)) + self.state.callbacks
 
         self._checkpoint_saver = None
         if save_folder is not None:

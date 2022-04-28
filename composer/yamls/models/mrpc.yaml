@@ -20,6 +20,9 @@ evaluators:
       metric_names:
         - Accuracy
         - BinaryF1Score
+      summary:
+        - max
+        - max
 model:
   bert_classification:
     num_labels: 2

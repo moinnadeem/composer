@@ -19,6 +19,8 @@ evaluators:
           drop_last: false
       metric_names:
         - MatthewsCorrCoef
+      summary:
+        - max
 model:
   bert_classification:
     num_labels: 2
