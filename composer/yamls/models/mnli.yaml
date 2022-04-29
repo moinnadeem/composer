@@ -61,6 +61,12 @@ device:
 loggers:
   - progress_bar: {}
   - wandb: {}
+  - object_store:
+      object_store_hparams:
+        provider: GOOGLE_STORAGE
+        container: moin_bert_checkpoints
+        key_environ: GCS_KEY
+        secret_environ: GCS_SECRET
 dataloader:
   pin_memory: true
   persistent_workers: true
@@ -74,7 +80,10 @@ validate_every_n_batches: 2300
 validate_every_n_epochs: 1
 callbacks:
   - lr_monitor: {}
-load_path: https://storage.googleapis.com/llm_checkpoints/bert_checkpoint/bert_checkpoints/ep7.pt
+load_path: https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-baseline/checkpoints/ep0-ba3500-rank0-wct2041 
 load_weights_only: true
 load_strict_model_weights: false
 load_chunk_size: 8192
+save_interval: 3500ba
+save_artifact_name: '{run_name}/mnli/checkpoints/ep{epoch}-ba{batch}-rank{rank}'
+save_folder: mnli_checkpoints
