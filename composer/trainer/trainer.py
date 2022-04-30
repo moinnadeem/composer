@@ -594,7 +594,7 @@ class Trainer:
 
         if mnli_mid_training:
             checkpoint_name = load_path.split("/")[-1]
-            run_name = '{run_name}/' + checkpoint_name
+            run_name = f'{run_name}/{checkpoint_name}'
             print("Using mid-training with run name", run_name)
 
         if isinstance(deepspeed_config, bool):
