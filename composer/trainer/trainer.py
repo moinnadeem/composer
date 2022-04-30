@@ -592,6 +592,11 @@ class Trainer:
                 raise ValueError(
                     'Scale schedule has reduced the max_duration to 0. Set a higher ratio or use more epochs.')
 
+        if mnli_mid_training:
+            checkpoint_name = load_path.split("/")[-1]
+            run_name = '{run_name}/' + checkpoint_name
+            print("Using mid-training with run name", run_name)
+
         if isinstance(deepspeed_config, bool):
             self._deepspeed_config = {} if deepspeed_config else None
         else:
@@ -830,11 +835,6 @@ class Trainer:
 
         self.logger = Logger(state=self.state, destinations=loggers, run_name=run_name)
         self.state.callbacks = list(cast(List[Callback], loggers)) + list(cast(List[Callback], self.evaluators)) + self.state.callbacks
-
-        if mnli_mid_training:
-            checkpoint_name = load_path.split("/")[-1]
-            save_artifact_name = '{run_name}/' + checkpoint_name + '/checkpoints/ep{epoch}-ba{batch}-rank{rank}'
-            print("Using mid-training with save artifact name", save_artifact_name)
 
         self._checkpoint_saver = None
         if save_folder is not None:
