@@ -540,6 +540,7 @@ class Trainer:
         save_interval: Union[str, int, Time, Callable[[State, Event], bool]] = "1ep",
         save_weights_only: bool = False,
         save_num_checkpoints_to_keep: int = -1,
+        mnli_mid_training: bool = False,
 
         # subset parameters
         train_subset_num_batches: Optional[int] = None,
@@ -829,6 +830,11 @@ class Trainer:
 
         self.logger = Logger(state=self.state, destinations=loggers, run_name=run_name)
         self.state.callbacks = list(cast(List[Callback], loggers)) + list(cast(List[Callback], self.evaluators)) + self.state.callbacks
+
+        if mnli_mid_training:
+            checkpoint_name = load_path.split("/")[-1]
+            save_artifact_name = '{run_name}/' + checkpoint_name + '/checkpoints/ep{epoch}-ba{batch}-rank{rank}'
+            print("Using mid-training with save artifact name", save_artifact_name)
 
         self._checkpoint_saver = None
         if save_folder is not None:

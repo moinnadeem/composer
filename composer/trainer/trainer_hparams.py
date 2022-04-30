@@ -282,7 +282,7 @@ class TrainerHparams(hp.Hparams):
     # training hparams
     grad_accum: Union[int, str] = hp.optional(textwrap.dedent("""\
         Determines the number of microbatches to split a per-gpu batch into,
-        used to compensate for low-memory-capacity devices. If set to auto, 
+        used to compensate for low-memory-capacity devices. If set to auto,
         dynamically increases grad_accum if microbatch size is too large for
         GPU. Defaults to ``1``"""),
                                               default=1)
@@ -376,6 +376,7 @@ class TrainerHparams(hp.Hparams):
         "Number of checkpoints to persist locally. Set to -1 to never delete checkpoints.",
         default=-1,
     )
+    mnli_mid_training: bool = hp.optional("Whether to enable MNLI checkpoints for mid-training.", default=False)
 
     # subset parameters
     train_subset_num_batches: Optional[int] = hp.optional(
@@ -632,6 +633,7 @@ class TrainerHparams(hp.Hparams):
             save_interval=self.save_interval,
             save_weights_only=self.save_weights_only,
             save_num_checkpoints_to_keep=self.save_num_checkpoints_to_keep,
+            mnli_mid_training=self.mnli_mid_training,
 
             # Subset parameters
             train_subset_num_batches=self.train_subset_num_batches,
