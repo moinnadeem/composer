@@ -40,6 +40,9 @@ parameters:  # Any parameter overrides you want to use IN EVERY RUN should be sp
       use_triton: false
       act_fn_name: no_replacement
 grid:
+  seed:
+    - 1
+    - 2
   load_path:
     - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-baseline/ep0-ba3500-rank0-wct2041/checkpoints/ep5-ba40910-rank0-wct5376
     - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-baseline/ep0-ba14000-rank0-wct8034/checkpoints/ep5-ba40910-rank0-wct5331
