@@ -525,6 +525,7 @@ class Trainer:
         load_path: Optional[str] = None,
         load_object_store: Optional[ObjectStore] = None,
         load_weights_only: bool = False,
+        load_ignore_model_keys: Optional[List[str]] = None,
         # TODO (Koin): discuss the implementation of removing keys from a model
         load_strict: bool = False,
         load_chunk_size: int = 1_048_576,
@@ -834,7 +835,8 @@ class Trainer:
                 ))
 
         self.logger = Logger(state=self.state, destinations=loggers, run_name=run_name)
-        self.state.callbacks = list(cast(List[Callback], loggers)) + list(cast(List[Callback], self.evaluators)) + self.state.callbacks
+        self.state.callbacks = list(cast(List[Callback], loggers)) + list(cast(List[Callback],
+                                                                               self.evaluators)) + self.state.callbacks
 
         self._checkpoint_saver = None
         if save_folder is not None:
@@ -919,7 +921,8 @@ class Trainer:
                                               load_weights_only=load_weights_only,
                                               strict_model_weights=load_strict,
                                               chunk_size=load_chunk_size,
-                                              progress_bar=load_progress_bar)
+                                              progress_bar=load_progress_bar,
+                                              ignore_model_keys=load_ignore_model_keys)
             reproducibility.seed_all(self.state.seed)
 
         if not self.deepspeed_enabled:

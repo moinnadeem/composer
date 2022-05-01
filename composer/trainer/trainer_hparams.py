@@ -344,6 +344,10 @@ class TrainerHparams(hp.Hparams):
         Whether to only load the weights from the model.
         This parameter has no effect if `load_path`is not specified."""),
                                           default=False)
+    load_ignore_model_keys: Optional[List[str]] = hp.optional(doc=textwrap.dedent("""\
+        Whether to ignore certain model keys from the checkpoint.
+        For example, keys that might have mismatched shapes."""),
+                                                              default=None)
     load_strict_model_weights: bool = hp.optional(doc=textwrap.dedent("""\
         Ensure that the set of checkpoint weights in the checkpoint and model must exactly match.
         This parameter has no effect if `load_path` is not specified."""),
@@ -622,6 +626,7 @@ class TrainerHparams(hp.Hparams):
             load_path=self.load_path,
             load_object_store=None if self.load_object_store is None else self.load_object_store.initialize_object(),
             load_weights_only=self.load_weights_only,
+            load_ignore_model_keys=self.load_ignore_model_keys,
             load_strict=self.load_strict_model_weights,
             load_chunk_size=self.load_chunk_size,
             load_progress_bar=self.load_progress_bar,
