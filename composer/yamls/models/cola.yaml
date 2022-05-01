@@ -41,7 +41,7 @@ schedulers:
 loggers:
   - progress_bar: {}
   - wandb: {}
-max_duration: 100ep
+max_duration: 50ep
 train_batch_size: 32
 eval_batch_size: 32
 seed: 19

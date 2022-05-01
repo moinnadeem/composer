@@ -85,5 +85,5 @@ load_weights_only: true
 load_strict_model_weights: false
 load_chunk_size: 8192
 save_interval: 3500ba
-save_artifact_name: '{run_name}/mnli/checkpoints/ep{epoch}-ba{batch}-rank{rank}'
 save_folder: mnli_checkpoints
+mnli_mid_training: true

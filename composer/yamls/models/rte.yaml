@@ -19,6 +19,8 @@ evaluators:
           drop_last: false
       metric_names:
         - Accuracy
+      summary:
+        - max
 model:
   bert_classification:
     num_labels: 2
@@ -36,6 +38,9 @@ optimizer:
 schedulers:
   - linear_decay_with_warmup:
       t_warmup: 0.06dur
+loggers:
+  - progress_bar: {}
+  - wandb: {}
 max_duration: 3ep
 train_batch_size: 16
 eval_batch_size: 16

@@ -29,6 +29,7 @@ algorithms:
   - act_fn_search
 models: mnli
 parameters:  # Any parameter overrides you want to use IN EVERY RUN should be specified here
+  save_interval: 50ba
   run_name: mnli-baseline
   _n_gpus: 1
   grad_accum: 1
@@ -42,11 +43,4 @@ parameters:  # Any parameter overrides you want to use IN EVERY RUN should be sp
 grid:
   load_path:
     - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-baseline/checkpoints/ep0-ba3500-rank0-wct2041
-    - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-baseline/checkpoints/ep0-ba14000-rank0-wct8034
-    - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-baseline/checkpoints/ep0-ba24500-rank0-wct13954
-    - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-baseline/checkpoints/ep0-ba35000-rank0-wct19812
-    - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-baseline/checkpoints/ep0-ba45500-rank0-wct25636
-    - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-baseline/checkpoints/ep0-ba56000-rank0-wct31470
-    - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-baseline/checkpoints/ep0-ba66500-rank0-wct37312
-    - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-baseline/checkpoints/ep1-ba68796-rank0-wct38583
 named_like: moin-bert-baseline
