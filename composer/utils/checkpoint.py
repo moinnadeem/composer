@@ -269,9 +269,17 @@ def _restore_checkpoint(
     # Now, all ranks load the checkpoint that local rank zero downloaded
     state_dict = torch.load(composer_states_filepath, map_location='cpu')
     log.debug(f"Loaded checkpoint with keys {state_dict.keys()} and state keys {state_dict['state'].keys()}")
+
     if ignore_model_keys:
-        for k in ignore_model_keys:
-            del state_dict['state']['model'][k]
+        if state.is_model_deepspeed:
+            deepspeed_states_path = f"{extracted_checkpoint_folder}/{_DEEPSPEED_TAG}/mp_rank_00_model_states.pt"
+            deepspeed_states = torch.load(deepspeed_states_path, map_location="cpu")
+            for k in ignore_model_keys:
+                del deepspeed_states['module'][k]
+        else:
+            for k in ignore_model_keys:
+                del state_dict['state']['model'][k]
+        torch.save(deepspeed_states, deepspeed_states_path)
 
     if state.is_model_deepspeed:
         if extracted_checkpoint_folder is None:
