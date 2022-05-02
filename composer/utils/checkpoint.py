@@ -276,10 +276,10 @@ def _restore_checkpoint(
             deepspeed_states = torch.load(deepspeed_states_path, map_location="cpu")
             for k in ignore_model_keys:
                 del deepspeed_states['module'][k]
+            torch.save(deepspeed_states, deepspeed_states_path)
         else:
             for k in ignore_model_keys:
                 del state_dict['state']['model'][k]
-        torch.save(deepspeed_states, deepspeed_states_path)
 
     if state.is_model_deepspeed:
         if extracted_checkpoint_folder is None:
