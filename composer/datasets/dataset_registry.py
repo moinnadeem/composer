@@ -12,8 +12,8 @@ from composer.datasets.glue import GLUEHparams
 from composer.datasets.imagenet import (Imagenet1kWebDatasetHparams, ImagenetDatasetHparams,
                                         TinyImagenet200WebDatasetHparams)
 from composer.datasets.lm_datasets import LMDatasetHparams
-from composer.datasets.streaming_lm_datasets import StreamingLMDatasetHparams
 from composer.datasets.mnist import MNISTDatasetHparams, MNISTWebDatasetHparams
+from composer.datasets.streaming_lm_datasets import StreamingLMDatasetHparams
 
 registry = {
     "ade20k": ADE20kDatasetHparams,

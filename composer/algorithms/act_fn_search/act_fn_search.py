@@ -13,6 +13,7 @@ import transformers
 import yahp as hp
 from torch.nn.functional import relu
 from transformers.models.bert.modeling_bert import BertIntermediate, BertOutput
+
 try:
     from apex.normalization.fused_layer_norm import FusedLayerNorm
     from xformers.triton.layer_norm import FusedLayerNorm as TritonLayerNorm
@@ -161,8 +162,30 @@ class DummyBERTIntermediateOutput(torch.nn.Module):
     def forward(self, hidden_states):
         return hidden_states
 
-
 class BERTGatedOutput(torch.nn.Module):
+    def __init__(self, d_embed, d_ff, dropout_rate, act_fn, layernorm_eps):
+        super().__init__()
+        self.d_embed = d_embed
+        self.d_ff = d_ff
+        self.wi = torch.nn.Linear(d_embed, 2 * d_ff)
+        self.wo = torch.nn.Linear(d_ff, d_embed)
+        self.dropout = torch.nn.Dropout(dropout_rate)
+        self.act = act_fn
+        self.layernorm = torch.nn.LayerNorm(d_embed, eps=layernorm_eps)
+
+    def forward(self, hidden_states, input_tensor):
+        hidden_states = self.wi(hidden_states)
+        hidden_states = (
+            self.act(hidden_states[..., : self.d_ff]) * hidden_states[..., self.d_ff :]
+        )
+        hidden_states = self.dropout(hidden_states)
+        # multiply by the second matrix
+        hidden_states = self.wo(hidden_states)
+        # add the residual connection and post-LN
+        hidden_states = self.layernorm(hidden_states + input_tensor)
+        return hidden_states
+
+class BERTGatedOutputOld(torch.nn.Module):
 
     def __init__(self, d_embed, d_ff, dropout_rate, act_fn, layernorm_eps):
         super().__init__()

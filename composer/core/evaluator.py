@@ -10,8 +10,8 @@ from typing import TYPE_CHECKING, List, Optional, Union
 
 from torchmetrics import Metric, MetricCollection
 
-from composer.core.data_spec import DataSpec as DataSpec
 from composer.core import Callback
+from composer.core.data_spec import DataSpec as DataSpec
 
 if TYPE_CHECKING:
     from composer.core.types import DataLoader

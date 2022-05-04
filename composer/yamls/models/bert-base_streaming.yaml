@@ -50,17 +50,15 @@ schedulers:
       t_warmup: 0.06dur
       alpha_f: 0.02
 loggers:
-  - progress_bar: {}
-  - wandb: {}
-  - object_store:
-      object_store_hparams:
-        provider: GOOGLE_STORAGE
-        container: moin_bert_checkpoints
-        key_environ: GCS_KEY
-        secret_environ: GCS_SECRET
+  - progress_bar:
+      log_to_console: true
+      console_log_level: batch
+callbacks:
+  - speed_monitor:
+      window_size: 100
 max_duration: 1ep  # Baseline is 256M samples, 7 epochs is ~280M samples
-train_batch_size: 4000
-eval_batch_size: 2000
+train_batch_size: 250 
+eval_batch_size: 250 
 seed: 19
 device:
   gpu: {}
@@ -74,6 +72,11 @@ grad_accum: 1
 precision: amp
 grad_clip_norm: None
 validate_every_n_batches: 1000
-validate_every_n_epochs: 1
-save_folder: bert_checkpoints
-save_interval: 3500ba
+train_subset_num_batches: 1500 
+algorithms:
+  act_fn_search:
+    use_gated: true
+    use_rmsnorm: false
+    use_fln: false
+    use_triton: false
+    act_fn_name: gelu 
