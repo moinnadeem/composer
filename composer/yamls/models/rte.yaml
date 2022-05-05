@@ -54,13 +54,14 @@ dataloader:
   timeout: 0
   prefetch_factor: 2
 grad_accum: 1
-precision: amp
+precision: fp16 
+deepspeed: {}
 grad_clip_norm: None
 validate_every_n_batches: 1000
 validate_every_n_epochs: 1
 callbacks:
   - lr_monitor: {}
-load_path: https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-baseline/ep1-ba68796-rank0-wct38583/checkpoints/ep5-ba40910-rank0-wct5362
+load_path: https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-deepspeed/ep1-ba68796-rank0-wct33326.tar/checkpoints/ep5-ba40910-rank0-wct4970.tar 
 load_weights_only: true
 load_strict_model_weights: false
 load_chunk_size: 8192
