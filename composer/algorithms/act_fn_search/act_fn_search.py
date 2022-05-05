@@ -16,6 +16,7 @@ from transformers.models.bert.modeling_bert import BertIntermediate, BertOutput
 
 try:
     from apex.normalization.fused_layer_norm import FusedLayerNorm
+    from xformers.triton import FusedLinear
     from xformers.triton.layer_norm import FusedLayerNorm as TritonLayerNorm
 except ImportError as e:
     print(e)
@@ -38,6 +39,8 @@ class ActFnSearchHparams(AlgorithmHparams):
     use_rmsnorm: bool = hp.required("Whether to use RMSNorm instead of LayerNorm.")
     use_fln: bool = hp.required("Whether to use fused layernorms.")
     use_triton: bool = hp.required("Whether to use fused layernorms.")
+    w0_bias: bool = hp.required("Whether to use a bias term on W1.")
+    w1_bias: bool = hp.required("Whether to use a bias term on W0.")
 
     def initialize_object(self) -> "Primer":
         return ActFnSearch(**asdict(self))
@@ -66,7 +69,16 @@ def occumpy_mem(cuda_device):
 
 
 def apply_act_fn(model: torch.nn.Module, optimizers: Union[torch.optim.Optimizer, Sequence[torch.optim.Optimizer]],
-                 act_fn_name: str, use_gated: bool, use_rmsnorm: bool, use_fln: bool, use_triton: bool) -> None:
+                 act_fn_name: str, use_gated: bool, use_rmsnorm: bool, use_fln: bool, use_triton: bool, w0_bias: bool,
+                 w1_bias: bool) -> None:
+    gated_cls = "BERTGatedOutputOld"
+    if act_fn_name == "gelu_new":
+        gated_cls = "BERTGatedOutputNew"
+        act_fn_name = "gelu"
+    elif act_fn_name == "gelu_old":
+        act_fn_name = "gelu"
+        gated_cls = "BERTGatedOutputOld"
+
     act_fns = {
         "squared_relu": squared_relu,
         "fast_gelu": transformers.activations.gelu_fast,
@@ -111,8 +123,13 @@ def apply_act_fn(model: torch.nn.Module, optimizers: Union[torch.optim.Optimizer
             BertIntermediate:
                 lambda x, module_index: DummyBERTIntermediateOutput(),
             BertOutput:
-                lambda x, module_index: BERTGatedOutput(
-                    d_embed=d_embed, d_ff=d_ff, dropout_rate=dropout_rate, act_fn=act_fn, layernorm_eps=layernorm_eps)
+                lambda x, module_index: globals()[gated_cls](d_embed=d_embed,
+                                                             d_ff=d_ff,
+                                                             dropout_rate=dropout_rate,
+                                                             act_fn=act_fn,
+                                                             layernorm_eps=layernorm_eps,
+                                                             w0_bias=w0_bias,
+                                                             w1_bias=w1_bias)
         }
         module_surgery.replace_module_classes(module=model, optimizers=optimizers, policies=policy)
 
@@ -162,7 +179,9 @@ class DummyBERTIntermediateOutput(torch.nn.Module):
     def forward(self, hidden_states):
         return hidden_states
 
-class BERTGatedOutput(torch.nn.Module):
+
+class BERTGatedOutputNew(torch.nn.Module):
+
     def __init__(self, d_embed, d_ff, dropout_rate, act_fn, layernorm_eps):
         super().__init__()
         self.d_embed = d_embed
@@ -175,9 +194,7 @@ class BERTGatedOutput(torch.nn.Module):
 
     def forward(self, hidden_states, input_tensor):
         hidden_states = self.wi(hidden_states)
-        hidden_states = (
-            self.act(hidden_states[..., : self.d_ff]) * hidden_states[..., self.d_ff :]
-        )
+        hidden_states = (self.act(hidden_states[..., :self.d_ff]) * hidden_states[..., self.d_ff:])
         hidden_states = self.dropout(hidden_states)
         # multiply by the second matrix
         hidden_states = self.wo(hidden_states)
@@ -185,12 +202,16 @@ class BERTGatedOutput(torch.nn.Module):
         hidden_states = self.layernorm(hidden_states + input_tensor)
         return hidden_states
 
+
 class BERTGatedOutputOld(torch.nn.Module):
 
-    def __init__(self, d_embed, d_ff, dropout_rate, act_fn, layernorm_eps):
+    def __init__(self, d_embed, d_ff, dropout_rate, act_fn, layernorm_eps, w0_bias, w1_bias):
         super().__init__()
-        self.wi_0 = torch.nn.Linear(d_embed, d_ff)
-        self.wi_1 = torch.nn.Linear(d_embed, d_ff)
+        self.wi_0 = torch.nn.Linear(d_embed, d_ff, bias=w0_bias)
+        self.wi_1 = torch.nn.Linear(d_embed, d_ff, bias=w1_bias)
+        print(f"Bias terms: w0: {w0_bias}, w1: {w1_bias}")
+        print(self.wi_0, self.wi_1)
+        # self.wi_1 = FusedLinear(d_embed, d_ff, bias=False, activation="gelu")
         self.wo = torch.nn.Linear(d_ff, d_embed)
         self.dropout = torch.nn.Dropout(dropout_rate)
         self.act = act_fn
@@ -209,12 +230,15 @@ class BERTGatedOutputOld(torch.nn.Module):
 
 class ActFnSearch(Algorithm):
 
-    def __init__(self, act_fn_name: str, use_gated: bool, use_rmsnorm: bool, use_fln: bool, use_triton: bool) -> None:
+    def __init__(self, act_fn_name: str, use_gated: bool, use_rmsnorm: bool, use_fln: bool, use_triton: bool,
+                 w0_bias: bool, w1_bias: bool) -> None:
         self.act_fn_name = act_fn_name
         self.use_gated = use_gated
         self.use_rmsnorm = use_rmsnorm
         self.use_fln = use_fln
         self.use_triton = use_triton
+        self.w0_bias = w0_bias
+        self.w1_bias = w1_bias
 
     def match(self, event: Event, state: State) -> bool:
         """ Runs on Event.INIT
@@ -233,4 +257,6 @@ class ActFnSearch(Algorithm):
                          use_gated=self.use_gated,
                          use_rmsnorm=self.use_rmsnorm,
                          use_fln=self.use_fln,
-                         use_triton=self.use_triton)
+                         use_triton=self.use_triton,
+                         w0_bias=self.w0_bias,
+                         w1_bias=self.w1_bias)

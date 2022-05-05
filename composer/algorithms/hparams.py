@@ -42,9 +42,12 @@ class ActFnSearchHparams(AlgorithmHparams):
     use_rmsnorm: bool = hp.required("Whether to use RMSNorm instead of LayerNorm.")
     use_fln: bool = hp.required("Whether to use fused layernorms.")
     use_triton: bool = hp.required("Whether to use fused layernorms.")
+    w0_bias: bool = hp.required("Whether to use a bias term on W1.")
+    w1_bias: bool = hp.required("Whether to use a bias term on W0.")
 
     def initialize_object(self) -> "Primer":
         return ActFnSearch(**asdict(self))
+
 
 @dataclass
 class AlibiHparams(AlgorithmHparams):

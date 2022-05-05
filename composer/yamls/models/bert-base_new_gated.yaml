@@ -1,0 +1,84 @@
+train_dataset:
+  streaming_lm:
+    dataset_name: c4
+    dataset_config_name: en
+    split: train
+    max_samples: 275184000
+    max_seq_len: 128
+    group_method: truncate # TODO: check that the code for this one is right
+    tokenizer_name: bert-base-uncased
+    use_masked_lm: true # TODO: check that the code for this one is right
+    mlm_probability: 0.15
+    seed: 17
+    shuffle: true
+    drop_last: true
+evaluators:
+  evaluator:
+    label: bert_pre_training
+    eval_dataset:
+      streaming_lm:
+        dataset_name: c4
+        dataset_config_name: en
+        split: validation
+        max_samples: 32000 # there's a bug, this is currently per-device
+        max_seq_len: 128
+        group_method: truncate # TODO: check that the code for this one is right
+        tokenizer_name: bert-base-uncased
+        use_masked_lm: true # TODO: check that the code for this one is right
+        mlm_probability: 0.15
+        seed: 17
+        shuffle: false
+        drop_last: true
+    metric_names:
+      - LanguageCrossEntropy
+      - MaskedAccuracy
+model:
+  bert:
+    use_pretrained: false
+    tokenizer_name: bert-base-uncased
+    pretrained_model_name: bert-base-uncased
+optimizer:
+  decoupled_adamw:
+    lr: 5.0e-4
+    betas:
+      - 0.9
+      - 0.98
+    eps: 1.0e-06
+    weight_decay: 1.0e-5
+schedulers:
+  - linear_decay_with_warmup:
+      t_warmup: 0.06dur
+      alpha_f: 0.02
+loggers:
+  - wandb:
+      project: gated_throughput
+      name: new_gated 
+  - progress_bar:
+      log_to_console: true
+      console_log_level: batch
+callbacks:
+  - speed_monitor:
+      window_size: 400
+max_duration: 1ep  # Baseline is 256M samples, 7 epochs is ~280M samples
+train_batch_size: 250 
+eval_batch_size: 250 
+seed: 19
+device:
+  gpu: {}
+dataloader:
+  pin_memory: true
+  persistent_workers: true
+  num_workers: 1
+  timeout: 0
+  prefetch_factor: 2
+grad_accum: 1
+precision: amp
+grad_clip_norm: None
+train_subset_num_batches: 1500 
+algorithms:
+  act_fn_search:
+    use_gated: true
+    use_rmsnorm: false
+    use_fln: false
+    use_triton: false
+    act_fn_name: gelu_new
