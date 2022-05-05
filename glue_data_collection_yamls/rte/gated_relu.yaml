@@ -45,11 +45,11 @@ grid:
     - 1
     - 2
   load_path:
-    - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-baseline/ep0-ba3500-rank0-wct2041/checkpoints/ep5-ba40910-rank0-wct5376
-    - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-baseline/ep0-ba14000-rank0-wct8034/checkpoints/ep5-ba40910-rank0-wct5331
-    - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-baseline/ep0-ba24500-rank0-wct13954/checkpoints/ep5-ba40910-rank0-wct5227
-    - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-baseline/ep0-ba35000-rank0-wct19812/checkpoints/ep5-ba40910-rank0-wct5194
-    - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-baseline/ep0-ba45500-rank0-wct25636/checkpoints/ep5-ba40910-rank0-wct5392
-    - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-baseline/ep0-ba56000-rank0-wct31470/checkpoints/ep5-ba40910-rank0-wct5367
-    - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-baseline/ep0-ba66500-rank0-wct37312/checkpoints/ep5-ba40910-rank0-wct5347
-    - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-baseline/ep1-ba68796-rank0-wct38583/checkpoints/ep5-ba40910-rank0-wct5362
+    - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-relu-gated/ep0-ba3500-rank0-wct2031/checkpoints/ep5-ba40910-rank0-wct5673
+    - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-relu-gated/ep0-ba14000-rank0-wct8045/checkpoints/ep5-ba40910-rank0-wct5660
+    - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-relu-gated/ep0-ba24500-rank0-wct14063/checkpoints/ep5-ba40910-rank0-wct5662
+    - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-relu-gated/ep0-ba35000-rank0-wct20031/checkpoints/ep5-ba40910-rank0-wct5530
+    - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-relu-gated/ep0-ba45500-rank0-wct25993/checkpoints/ep5-ba40910-rank0-wct5532
+    - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-relu-gated/ep0-ba56000-rank0-wct32021/checkpoints/ep5-ba40910-rank0-wct5621
+    - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-relu-gated/ep0-ba66500-rank0-wct37992/checkpoints/ep5-ba40910-rank0-wct5683
+    - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-relu-gated/ep1-ba68796-rank0-wct39299/checkpoints/ep5-ba40910-rank0-wct5641
