@@ -251,7 +251,7 @@ class Glue(datasets.GeneratorBasedBuilder):
                 "sentence2": "sentence2",
             },
             label_column="score",
-            data_url="https://dl.fbaipublicfiles.com/glue/data/STS-B.zip",
+            data_url="https://storage.googleapis.com/moin_glue_datasets/STS-B.zip",
             data_dir="STS-B",
             citation=textwrap.dedent(
                 """\
