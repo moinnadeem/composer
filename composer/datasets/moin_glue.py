@@ -42,9 +42,9 @@ evaluating, and analyzing natural language understanding systems.
 
 """
 
-_MRPC_DEV_IDS = "https://dl.fbaipublicfiles.com/glue/data/mrpc_dev_ids.tsv"
-_MRPC_TRAIN = "https://dl.fbaipublicfiles.com/senteval/senteval_data/msr_paraphrase_train.txt"
-_MRPC_TEST = "https://dl.fbaipublicfiles.com/senteval/senteval_data/msr_paraphrase_test.txt"
+_MRPC_DEV_IDS = "https://storage.googleapis.com/moin_glue_datasets/mrpc_dev_ids.tsv"
+_MRPC_TRAIN = "https://storage.googleapis.com/moin_glue_datasets/msr_paraphrase_train.txt"
+_MRPC_TEST = "https://storage.googleapis.com/moin_glue_datasets/msr_paraphrase_test.txt"
 
 _MNLI_BASE_KWARGS = dict(
     text_features={
