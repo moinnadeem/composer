@@ -29,7 +29,7 @@ model:
     pretrained_model_name: bert-base-uncased
 optimizer:
   decoupled_adamw:
-    lr: 1.0e-4
+    lr: 5.0e-5
     betas:
       - 0.9
       - 0.98
@@ -37,13 +37,14 @@ optimizer:
     weight_decay: 0.0
 schedulers:
   - linear_decay_with_warmup:
-      t_warmup: 0.06dur
+      t_warmup: 0.02dur
 loggers:
   - progress_bar: {}
-  - wandb: {}
-max_duration: 10ep
+  - wandb:
+      tags: gold_may_11
+max_duration: 30ep
 train_batch_size: 16
-eval_batch_size: 16
+eval_batch_size: 48
 seed: 19
 device:
   gpu: {}
@@ -54,14 +55,13 @@ dataloader:
   timeout: 0
   prefetch_factor: 2
 grad_accum: 1
-precision: fp16 
-deepspeed: {}
+precision: amp
 grad_clip_norm: None
 validate_every_n_batches: 1000
 validate_every_n_epochs: 1
 callbacks:
   - lr_monitor: {}
-load_path: https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-deepspeed/ep1-ba68796-rank0-wct33326.tar/checkpoints/ep5-ba40910-rank0-wct4970.tar 
+load_path: https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-baseline/ep1-ba68796-rank0-wct38583/checkpoints/ep5-ba40910-rank0-wct5362
 load_weights_only: true
 load_strict_model_weights: false
 load_chunk_size: 8192

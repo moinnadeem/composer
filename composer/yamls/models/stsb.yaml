@@ -19,6 +19,8 @@ evaluators:
           drop_last: false
       metric_names:
         - SpearmanCorrCoef
+      summary:
+        - max
 model:
   bert_classification:
     num_labels: 1
@@ -27,16 +29,20 @@ model:
     pretrained_model_name: bert-base-uncased
 optimizer:
   decoupled_adamw:
-    lr: 3.0e-5
+    lr: 1.0e-4
     betas:
       - 0.9
       - 0.98
     eps: 1.0e-06
-    weight_decay: 3.0e-6
+    weight_decay: 0.0
 schedulers:
   - linear_decay_with_warmup:
-      t_warmup: 0.06dur
-max_duration: 10ep
+      t_warmup: 0.02dur
+loggers:
+  - progress_bar: {}
+  - wandb:
+      tags: gold_may_11
+max_duration: 30ep
 train_batch_size: 32
 eval_batch_size: 32
 seed: 19
@@ -59,3 +65,6 @@ load_path: https://storage.googleapis.com/llm_checkpoints/bert_checkpoint/bert_c
 load_weights_only: true
 load_strict_model_weights: false
 load_chunk_size: 8192
+load_ignore_model_keys:
+  - module.classifier.weight
+  - module.classifier.bias

@@ -39,11 +39,12 @@ parameters:  # Any parameter overrides you want to use IN EVERY RUN should be sp
       use_fln: false
       use_triton: false
       act_fn_name: relu
-named_like: moin-rte-relu-gated
+      w0_bias: true
+      w1_bias: true
 grid:
   seed:
-    - 1
-    - 2
+    - 4
+    - 5
   load_path:
     - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-relu-gated/ep0-ba3500-rank0-wct2031/checkpoints/ep5-ba40910-rank0-wct5673
     - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-relu-gated/ep0-ba14000-rank0-wct8045/checkpoints/ep5-ba40910-rank0-wct5660
@@ -53,3 +54,4 @@ grid:
     - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-relu-gated/ep0-ba56000-rank0-wct32021/checkpoints/ep5-ba40910-rank0-wct5621
     - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-relu-gated/ep0-ba66500-rank0-wct37992/checkpoints/ep5-ba40910-rank0-wct5683
     - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-relu-gated/ep1-ba68796-rank0-wct39299/checkpoints/ep5-ba40910-rank0-wct5641
+named_like: moin-rte-relu-gated-{{ search['seed'] }}

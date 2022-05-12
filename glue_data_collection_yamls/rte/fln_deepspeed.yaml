@@ -39,13 +39,18 @@ parameters:  # Any parameter overrides you want to use IN EVERY RUN should be sp
       use_fln: true
       use_triton: false
       act_fn_name: no_replacement
+      w0_bias: true
+      w1_bias: true
   precision: fp16
   deepspeed: {}
-named_like: moin-rte-fln-deepspeed
+named_like: moin-rte-fln-deepspeed-{{ search['seed'] }}
 grid:
   seed:
     - 1
     - 2
+    - 3
+    - 4
+    - 5
   load_path:
     - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-fln-deepspeed/ep0-ba14000-rank0-wct6547.tar/checkpoints/ep5-ba40910-rank0-wct5017.tar
     - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-fln-deepspeed/ep0-ba24500-rank0-wct11825.tar/checkpoints/ep5-ba40910-rank0-wct4890.tar

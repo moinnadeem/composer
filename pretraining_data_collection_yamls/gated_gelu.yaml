@@ -38,7 +38,13 @@ parameters:  # Any parameter overrides you want to use IN EVERY RUN should be sp
       use_fln: false
       use_triton: false
       act_fn_name: no_replacement
+      w0_bias: false
+      w1_bias: false
 grid:
+  algorithms.act_fn_search.w1_bias:
+    - true
+    - false
   algorithms.act_fn_search.act_fn_name:
     - gelu
-named_like: moin-bert-{{ search['algorithms.act_fn_search.act_fn_name'] }}-gated
+    - relu
+named_like: moin-bert-{{ search['algorithms.act_fn_search.act_fn_name'] }}-gated-w0-{{ search['algorithms.act_fn_search.w0_bias'] }}-w1-{{ search['algorithms.act_fn_search.w1_bias'] }}

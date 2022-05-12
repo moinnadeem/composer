@@ -39,11 +39,16 @@ parameters:  # Any parameter overrides you want to use IN EVERY RUN should be sp
       use_fln: true
       use_triton: false
       act_fn_name: no_replacement
-named_like: moin-rte-fln
+      w0_bias: true
+      w1_bias: true
+named_like: moin-rte-fln-{{ search['seed'] }}
 grid:
   seed:
     - 1
     - 2
+    - 3
+    - 4
+    - 5
   load_path:
     - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-fln/ep0-ba14000-rank0-wct7228/checkpoints/ep5-ba40910-rank0-wct4990
     - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-fln/ep0-ba24500-rank0-wct12679/checkpoints/ep5-ba40910-rank0-wct4821

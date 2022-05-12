@@ -39,11 +39,13 @@ parameters:  # Any parameter overrides you want to use IN EVERY RUN should be sp
       use_fln: false
       use_triton: false
       act_fn_name: gelu
-named_like: moin-rte-gelu-gated
+      w0_bias: true
+      w1_bias: true
+named_like: moin-rte-gelu-gated-{{ search['seed'] }}
 grid:
   seed:
-    - 1
-    - 2
+    - 4
+    - 5
   load_path:
     - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-gelu-gated/ep0-ba3500-rank0-wct2098/checkpoints/ep5-ba40910-rank0-wct5725
     - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-gelu-gated/ep0-ba14000-rank0-wct8306/checkpoints/ep5-ba40910-rank0-wct5770
