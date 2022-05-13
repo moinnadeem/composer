@@ -1,4 +1,4 @@
-# Copyright 2021 MosaicML. All Rights Reserved.
+# Copyright 2022 MosaicML. All Rights Reserved.
 import datetime
 import logging
 import os
@@ -317,7 +317,7 @@ def _print_process_exit_status(global_rank: int, process: subprocess.Popen):
         output=output,
         stderr=stderr,
     )
-    error_msg = [f"Global rank {global_rank} (PID {process.pid}) excited with code {process.returncode}"]
+    error_msg = [f"Global rank {global_rank} (PID {process.pid}) exited with code {process.returncode}"]
     if output is not None:
         error_msg.extend([
             f"----------Begin global rank {global_rank} STDOUT----------",

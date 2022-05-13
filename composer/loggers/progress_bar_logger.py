@@ -1,10 +1,9 @@
-# Copyright 2021 MosaicML. All Rights Reserved.
+# Copyright 2022 MosaicML. All Rights Reserved.
 
 """Logs metrics to the console and show a progress bar."""
 
 from __future__ import annotations
 
-import collections.abc
 import sys
 from dataclasses import asdict, dataclass
 from typing import Any, Callable, Dict, List, Optional, TextIO, Union
@@ -141,7 +140,7 @@ class ProgressBarLogger(LoggerDestination):
         if not self.should_log(state, log_level):
             return
         data_str = format_log_data_value(data)
-        log_str = f'[{log_level.name}][batch={int(state.timer.batch)}]: {data_str}'
+        log_str = f'[{log_level.name}][batch={int(state.timestamp.batch)}]: {data_str}'
 
         if self.is_train in self.pbars:
             # use tqdm.write to avoid interleaving with a progress bar
@@ -155,23 +154,16 @@ class ProgressBarLogger(LoggerDestination):
         if dist.get_local_rank() != 0 or not self.show_pbar:
             return
         assert self.is_train is not None, "self.is_train should be set by the callback"
-        if self.is_train:
-            total_steps = state.steps_per_epoch
-        else:
-            total_steps = 0
-            for evaluator in state.evaluators:
-                dataloader_spec = evaluator.dataloader
-                assert isinstance(dataloader_spec.dataloader, collections.abc.Sized)
-                total_steps += len(dataloader_spec.dataloader)
+        assert state.dataloader_len is not None, "dataloader_len should be set when using tqdm"
 
-        desc = f'Epoch {int(state.timer.epoch)}'
+        desc = f'Epoch {int(state.timestamp.epoch)}'
         position = 0 if self.is_train else 1
         if not self.is_train:
-            desc += f", Batch {int(state.timer.batch)} (val)"
+            desc += f", Batch {int(state.timestamp.batch)} (val)"
         self.pbars[self.is_train] = _ProgressBarLoggerInstance(
             file=self.stream,
             state=_ProgressBarLoggerInstanceState(
-                total=total_steps,
+                total=int(state.dataloader_len),
                 position=position,
                 n=0,
                 keys_to_log=_IS_TRAIN_TO_KEYS_TO_LOG[self.is_train],
