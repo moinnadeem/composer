@@ -1,4 +1,6 @@
-# Loss function related utilities.
+# Copyright 2022 MosaicML. All Rights Reserved.
+
+"""Loss-related utilities."""
 
 from __future__ import annotations
 

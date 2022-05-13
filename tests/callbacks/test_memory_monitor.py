@@ -1,4 +1,4 @@
-# Copyright 2021 MosaicML. All Rights Reserved.
+# Copyright 2022 MosaicML. All Rights Reserved.
 
 from typing import cast
 from unittest.mock import MagicMock
@@ -21,8 +21,6 @@ def _do_trainer_fit(composer_trainer_hparams: TrainerHparams, testing_with_gpu: 
 
     max_epochs = 1
     composer_trainer_hparams.max_duration = f"{max_epochs}ep"
-
-    composer_trainer_hparams.train_batch_size = 50
 
     trainer = composer_trainer_hparams.initialize_object()
 

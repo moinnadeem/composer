@@ -1,15 +1,15 @@
-# Copyright 2021 MosaicML. All Rights Reserved.
+# Copyright 2022 MosaicML. All Rights Reserved.
 
 from typing import Dict, List, Type
 
 from composer.algorithms.algorithm_hparams import AlgorithmHparams
-from composer.algorithms.hparams import (ActFnSearchHparams, AlibiHparams, AugMixHparams, BlurPoolHparams,
-                                         ChannelsLastHparams, ColOutHparams, CutMixHparams, CutOutHparams,
+from composer.algorithms.hparams import (ActFnSearchHparams, AGCHparams, AlibiHparams, AugMixHparams, BlurPoolHparams,
+                                         ChannelsLastHparams, ColOutHparams, CutMixHparams, CutOutHparams, EMAHparams,
                                          FactorizeHparams, GhostBatchNormHparams, LabelSmoothingHparams,
                                          LayerFreezingHparams, MixUpHparams, NoOpModelHparams,
                                          ProgressiveResizingHparams, RandAugmentHparams, SAMHparams,
-                                         ScaleScheduleHparams, SelectiveBackpropHparams, SeqLengthWarmupHparams,
-                                         SqueezeExciteHparams, StochasticDepthHparams, SWAHparams)
+                                         SelectiveBackpropHparams, SeqLengthWarmupHparams, SqueezeExciteHparams,
+                                         StochasticDepthHparams, SWAHparams)
 from composer.core.algorithm import Algorithm
 
 registry: Dict[str, Type[AlgorithmHparams]] = {
@@ -19,6 +19,7 @@ registry: Dict[str, Type[AlgorithmHparams]] = {
     'seq_length_warmup': SeqLengthWarmupHparams,
     'cutmix': CutMixHparams,
     'cutout': CutOutHparams,
+    'ema': EMAHparams,
     'factorize': FactorizeHparams,
     'ghost_batchnorm': GhostBatchNormHparams,
     'label_smoothing': LabelSmoothingHparams,
@@ -27,7 +28,6 @@ registry: Dict[str, Type[AlgorithmHparams]] = {
     'swa': SWAHparams,
     'no_op_model': NoOpModelHparams,
     'mixup': MixUpHparams,
-    'scale_schedule': ScaleScheduleHparams,
     'stochastic_depth': StochasticDepthHparams,
     'colout': ColOutHparams,
     'progressive_resizing': ProgressiveResizingHparams,
@@ -36,6 +36,7 @@ registry: Dict[str, Type[AlgorithmHparams]] = {
     'sam': SAMHparams,
     'alibi': AlibiHparams,
     'selective_backprop': SelectiveBackpropHparams,
+    'agc': AGCHparams,
 }
 
 

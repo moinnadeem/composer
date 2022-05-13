@@ -1,4 +1,4 @@
-# Copyright 2021 MosaicML. All Rights Reserved.
+# Copyright 2022 MosaicML. All Rights Reserved.
 
 """A wrapper for a dataloader to include metrics that apply to a specific dataset."""
 
@@ -6,17 +6,48 @@ from __future__ import annotations
 
 import copy
 import logging
-from typing import TYPE_CHECKING, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Optional, Union
 
 from torchmetrics import Metric, MetricCollection
 
-from composer.core.data_spec import DataSpec as DataSpec
 from composer.core import Callback
+from composer.core.data_spec import DataSpec, ensure_data_spec
+from composer.core.event import Event
+from composer.core.state import State
+from composer.core.time import Time, TimeUnit
 
-if TYPE_CHECKING:
-    from composer.core.types import DataLoader
+__all__ = ["Evaluator", "evaluate_periodically", "ensure_evaluator"]
 
-__all__ = ["Evaluator"]
+
+def evaluate_periodically(eval_interval: Union[str, Time, int]):
+    """Helper function to generate an evaluation interval callable.
+
+    Args:
+        eval_interval (str | Time | int): A :class:`.Time` instance or time string, or integer in epochs,
+            representing how often to evaluate. Set to ``0`` to disable evaluation.
+    Returns:
+        (State, Event) -> bool: A callable for the ``eval_interval`` argument of an :class:`.Evaluator`.
+    """
+    if isinstance(eval_interval, int):
+        eval_interval = Time(eval_interval, TimeUnit.EPOCH)
+    if isinstance(eval_interval, str):
+        eval_interval = Time.from_timestring(eval_interval)
+
+    if eval_interval.unit not in (TimeUnit.EPOCH, TimeUnit.BATCH):
+        raise ValueError("The `eval_interval` must have units of EPOCH or BATCH, or be a function.")
+
+    def should_eval(state: State, event: Event):
+        if int(eval_interval) <= 0:
+            return False
+
+        if eval_interval.unit == TimeUnit.EPOCH:
+            return int(state.timestamp.epoch) % int(eval_interval) == 0 and event == Event.EPOCH_END
+        if eval_interval.unit == TimeUnit.BATCH:
+            return int(state.timestamp.batch) % int(eval_interval) == 0 and event == Event.BATCH_END
+
+        return False
+
+    return should_eval
 
 log = logging.getLogger(__name__)
 
@@ -45,23 +76,45 @@ class Evaluator(Callback):
 
     Args:
         label (str): Name of the Evaluator
-        dataloader (Union[DataSpec, DataLoader]): DataLoader/DataSpec for evaluation data
-        metrics (Metric | MetricCollection): :class:`torchmetrics.Metric` to log. ``metrics`` will be deep-copied to ensure
-            that each evaluator updates only its ``metrics``.
-        summary (Optional[str]): Optionally, a summary statistic for each metric that is logged to WandB.
+        dataloader (DataSpec | Iterable | Dict[str, Any]): Iterable that yields batches, a :class:`.DataSpec` for evaluation,
+            or a Dict of :class:`.DataSpec` kwargs.
+        metrics (Metric | MetricCollection): :class:`torchmetrics.Metric` to log. ``metrics`` will be deep-copied to
+            ensure that each evaluator updates only its ``metrics``.
+        subset_num_batches (int, optional): The maximum number of batches to use for each evaluation. Defaults to
+            ``None``, which means that the ``eval_subset_num_batches`` parameter from the
+            :class:`~composer.trainer.trainer.Trainer` will be used.
+
+            Set to ``-1`` to evaluate the entire ``dataloader``
+        eval_interval (int | str | Time | (State, Event) -> bool, optional): An integer, which will be
+            interpreted to be epochs, a str (e.g. ``1ep``, or ``10ba``), a :class:`.Time` object, or a callable.
+            Defaults to ``None``, which means that the ``eval_interval`` parameter from the
+            :class:`~composer.trainer.trainer.Trainer` will be used.
+
+            If an integer (in epochs), :class:`.Time` string, or :class:`.Time` instance, the evaluator will be run
+            with this frequency. :class:`.Time` strings or :class:`.Time` instances must have units of
+            :attr:`.TimeUnit.BATCH` or :attr:`.TimeUnit.EPOCH`.
+
+            Set to ``0`` to disable evaluation.
+
+            If a callable, it should take two arguments (:class:`.State`, :class:`.Event`) and return a bool
+            representing whether the evaluator should be invoked. The event will be either :attr:`.Event.BATCH_END`
+            or :attr:`.Event.EPOCH_END`.
     """
 
-    def __init__(self,
-                 *,
-                 label: str,
-                 dataloader: Union[DataSpec, DataLoader],
-                 metrics: Union[Metric, MetricCollection],
-                 summary: Optional[List[str]] = None):
+    _eval_interval: Optional[Callable[[State, Event], bool]]
+
+    def __init__(
+        self,
+        *,
+        label: str,
+        dataloader: Union[DataSpec, Iterable, Dict[str, Any]],
+        metrics: Union[Metric, MetricCollection],
+        summary: Optional[List[str]] = None):
+        subset_num_batches: Optional[int] = None,
+        eval_interval: Optional[Union[int, str, Time, Callable[[State, Event], bool]]] = None,
+    ):
         self.label = label
-        if isinstance(dataloader, DataSpec):
-            self.dataloader = dataloader
-        else:
-            self.dataloader = DataSpec(dataloader)
+        self.dataloader = ensure_data_spec(dataloader)
 
         # Forcing metrics to be a MetricCollection simplifies logging results
         metrics = copy.deepcopy(metrics)
@@ -70,6 +123,8 @@ class Evaluator(Callback):
         else:
             self.metrics = metrics
         self.summary = summary
+        self.subset_num_batches = subset_num_batches
+        self.eval_interval = eval_interval
 
     def init(self, state: State, logger: Logger) -> None:
         # add metric summary to WandB metrics
@@ -87,3 +142,39 @@ class Evaluator(Callback):
 
             for metric_index, metric_name in enumerate(self.metrics.keys()):
                 wandb.define_metric(name=f'metrics/{self.label}/{metric_name}', summary=self.summary[metric_index])
+
+
+    @property
+    def eval_interval(self):
+        return self._eval_interval
+
+    @eval_interval.setter
+    def eval_interval(self, eval_interval: Optional[Union[int, str, Time, Callable[[State, Event], bool]]]):
+        if eval_interval is None:
+            self._eval_interval = None
+        elif not callable(eval_interval):
+            self._eval_interval = evaluate_periodically(eval_interval)
+        else:
+            self._eval_interval = eval_interval
+
+
+def ensure_evaluator(evaluator: Union[Evaluator, DataSpec, Iterable, Dict[str, Any]],
+                     default_metrics: Union[Metric, MetricCollection]):
+    """Ensure that ``evaluator`` is an :class:`.Evaluator`.
+
+    Args:
+        evaluator (Evaluator | DataSpec | Iterable | Dict[str, Any]): A dataloader,
+            :class:`.DataSpec` instance, dictionary of :class:`.DataSpec` kwargs, or existing evaluator.
+        default_metrics (Union[Metric, MetricCollection]): The metrics for the ``evaluator``, if a datalaoder was specified.
+
+    Returns:
+        Evaluator: An evaluator.
+    """
+    if isinstance(evaluator, Evaluator):
+        return evaluator
+    else:
+        return Evaluator(
+            label="eval",
+            dataloader=evaluator,
+            metrics=default_metrics,
+        )
