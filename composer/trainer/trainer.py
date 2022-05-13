@@ -684,16 +684,6 @@ class Trainer:
         dist_timeout: float = 300.0,
         ddp_sync_strategy: Optional[Union[str, DDPSyncStrategy]] = None,
 
-        if mnli_mid_training:
-            checkpoint_name = load_path.split("/")[-1]
-            run_name = f'{run_name}/{checkpoint_name}'
-            print("Using mid-training with run name", run_name)
-
-        if isinstance(deepspeed_config, bool):
-            self._deepspeed_config = {} if deepspeed_config else None
-        else:
-            self._deepspeed_config = deepspeed_config
-
         # Grad Clip Norm
         grad_clip_norm: float = -1.0,
 
@@ -776,6 +766,11 @@ class Trainer:
                     console_log_level=console_log_level,
                     stream=console_stream,
                 ))
+
+        if mnli_mid_training:
+            checkpoint_name = load_path.split("/")[-1]
+            run_name = f'{run_name}/{checkpoint_name}'
+            print("Using mid-training with run name", run_name)
 
         # Logger
         self.logger = Logger(state=self.state, destinations=loggers, run_name=run_name)
