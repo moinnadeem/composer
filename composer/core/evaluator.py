@@ -109,7 +109,7 @@ class Evaluator(Callback):
         label: str,
         dataloader: Union[DataSpec, Iterable, Dict[str, Any]],
         metrics: Union[Metric, MetricCollection],
-        summary: Optional[List[str]] = None
+        summary: Optional[List[str]] = None,
         subset_num_batches: Optional[int] = None,
         eval_interval: Optional[Union[int, str, Time, Callable[[State, Event], bool]]] = None,
     ):
