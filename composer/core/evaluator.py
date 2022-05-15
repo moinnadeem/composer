@@ -1,4 +1,5 @@
-# Copyright 2022 MosaicML. All Rights Reserved.
+# Copyright 2022 MosaicML Composer authors
+# SPDX-License-Identifier: Apache-2.0
 
 """A wrapper for a dataloader to include metrics that apply to a specific dataset."""
 
@@ -19,12 +20,14 @@ from composer.core.time import Time, TimeUnit
 __all__ = ["Evaluator", "evaluate_periodically", "ensure_evaluator"]
 
 
-def evaluate_periodically(eval_interval: Union[str, Time, int]):
+def evaluate_periodically(eval_interval: Union[str, Time, int], eval_at_fit_end: bool = True):
     """Helper function to generate an evaluation interval callable.
 
     Args:
         eval_interval (str | Time | int): A :class:`.Time` instance or time string, or integer in epochs,
             representing how often to evaluate. Set to ``0`` to disable evaluation.
+        eval_at_fit_end (bool): Whether to evaluate at the end of training, regardless of `eval_interval`.
+            Default: True
     Returns:
         (State, Event) -> bool: A callable for the ``eval_interval`` argument of an :class:`.Evaluator`.
     """
@@ -40,6 +43,23 @@ def evaluate_periodically(eval_interval: Union[str, Time, int]):
         if int(eval_interval) <= 0:
             return False
 
+        # if requested, evaluate at the end of training, as long as the length of training is specified.
+        if eval_at_fit_end and state.max_duration is not None:
+            # check if we are at the end of training
+            # handle different eval_intervals in order to not duplicate validation steps
+            if eval_interval.unit == TimeUnit.EPOCH and event == Event.EPOCH_END:
+                if state.max_duration.unit == TimeUnit.EPOCH and state.max_duration.value == int(state.timestamp.epoch):
+                    return True
+                if state.max_duration.unit == TimeUnit.BATCH and state.max_duration.value == int(state.timestamp.batch):
+                    return True
+            if eval_interval.unit == TimeUnit.BATCH and event == Event.BATCH_END:
+                if state.max_duration.unit == TimeUnit.EPOCH:
+                    num_epochs = state.max_duration.value
+                    num_total_steps = num_epochs * int(state.dataloader_len)
+                elif state.max_duration.unit == TimeUnit.BATCH:
+                    num_total_steps = state.max_duration.value
+                if num_total_steps == int(state.timestamp.batch):
+                    return True
         if eval_interval.unit == TimeUnit.EPOCH:
             return int(state.timestamp.epoch) % int(eval_interval) == 0 and event == Event.EPOCH_END
         if eval_interval.unit == TimeUnit.BATCH:
