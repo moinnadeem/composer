@@ -76,8 +76,7 @@ dataloader:
 grad_accum: 1
 precision: amp
 grad_clip_norm: None
-validate_every_n_batches: 2300
-validate_every_n_epochs: 1
+eval_interval: 2300ba
 callbacks:
   - lr_monitor: {}
 load_path: https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-deepspeed/ep1-ba68796-rank0-wct33326.tar/checkpoints/ep5-ba40910-rank0-wct4970.tar 
