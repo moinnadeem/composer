@@ -58,6 +58,9 @@ loggers:
         container: moin_bert_checkpoints
         key_environ: GCS_KEY
         secret_environ: GCS_SECRET
+callbacks:
+  - speed_monitor:
+      window_size: 500 
 max_duration: 1ep  # Baseline is 256M samples, 7 epochs is ~280M samples
 train_batch_size: 4000
 eval_batch_size: 2000
@@ -70,9 +73,9 @@ dataloader:
   num_workers: 1
   timeout: 0
   prefetch_factor: 2
-grad_accum: 1
+grad_accum: 8
 precision: amp
-grad_clip_norm: None
+grad_clip_norm: -1.0
 eval_interval: 3500ba
 save_folder: bert_checkpoints
 save_interval: 3500ba
