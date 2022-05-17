@@ -873,9 +873,25 @@ class Trainer:
         else:
             self._scheduler_step_frequency = TimeUnit.BATCH if step_schedulers_every_batch else TimeUnit.EPOCH
 
-        if len(ensure_tuple(schedulers)) == 0:
-            warnings.warn(f"NoSchedulerWarning: No schedulers were specified. The learning rate will be constant.")
- 
+        # Evaluators
+        if eval_dataloader is None:
+            evaluators: List[Evaluator] = []
+        else:
+            evaluators = [
+                ensure_evaluator(evaluator, model.metrics(train=False)) for evaluator in ensure_tuple(eval_dataloader)
+            ]
+            _set_evaluator_interval_and_subset_num_batches(
+                evaluators=evaluators,
+                eval_interval=eval_interval,
+                subset_num_batches=eval_subset_num_batches,
+            )
+        if len(evaluators) == 0:
+            if eval_subset_num_batches != -1:
+                raise ValueError("Specifying `eval_subset_num_batches` without an `eval_dataloader` has no effect.")
+            if eval_interval != 1:
+                raise ValueError("Specifying `eval_interval` without an `eval_dataloader` has no effect.")
+        self.state.evaluators = evaluators
+
         # Grad Clip Norm
         self._grad_clip_norm = grad_clip_norm
 
@@ -1253,9 +1269,6 @@ class Trainer:
             if step_schedulers_every_batch is not None:
                 raise ValueError("Specifying `step_schedulers_every_batch` without `schedulers` has no effect.")
 
-        if len(ensure_tuple(schedulers)) == 0:
-            warnings.warn(f"NoSchedulerWarning: No schedulers were specified. The learning rate will be constant.")
-
         # Evaluators
         if eval_dataloader is not None:
             evaluators = [
@@ -1545,6 +1558,7 @@ class Trainer:
                         )
 
                 self.engine.run_event(Event.EPOCH_CHECKPOINT)
+        self.engine.run_event(Event.FIT_END)
 
     def _handle_cuda_oom(self):
         """Handles CUDA Out of Memory and rescales if using adaptive grad_accum."""
