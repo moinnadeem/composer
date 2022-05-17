@@ -1,0 +1,7 @@
+name: moin-interaactive 
+instance: r1z1-g1-a100
+models: bert-base_streaming 
+image: mosaicml/moin
+algorithms: []
+git_repo: https://github.com/mosaicml/composer.git
+git_branch: dev

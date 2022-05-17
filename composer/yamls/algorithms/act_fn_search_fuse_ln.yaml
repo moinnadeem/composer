@@ -1,0 +1,4 @@
+use_gated: false
+use_rmsnorm: false
+use_fln: true
+act_fn_name: no_replacement

@@ -6,10 +6,12 @@
 from __future__ import annotations
 
 import copy
-from typing import Any, Callable, Dict, Iterable, Optional, Union
+import logging
+from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Optional, Union
 
 from torchmetrics import Metric, MetricCollection
 
+from composer.core import Callback
 from composer.core.data_spec import DataSpec, ensure_data_spec
 from composer.core.event import Event
 from composer.core.state import State
@@ -18,12 +20,14 @@ from composer.core.time import Time, TimeUnit
 __all__ = ["Evaluator", "evaluate_periodically", "ensure_evaluator"]
 
 
-def evaluate_periodically(eval_interval: Union[str, Time, int]):
+def evaluate_periodically(eval_interval: Union[str, Time, int], eval_at_fit_end: bool = True):
     """Helper function to generate an evaluation interval callable.
 
     Args:
         eval_interval (str | Time | int): A :class:`.Time` instance or time string, or integer in epochs,
             representing how often to evaluate. Set to ``0`` to disable evaluation.
+        eval_at_fit_end (bool): Whether to evaluate at the end of training, regardless of `eval_interval`.
+            Default: True
     Returns:
         (State, Event) -> bool: A callable for the ``eval_interval`` argument of an :class:`.Evaluator`.
     """
@@ -39,6 +43,23 @@ def evaluate_periodically(eval_interval: Union[str, Time, int]):
         if int(eval_interval) <= 0:
             return False
 
+        # if requested, evaluate at the end of training, as long as the length of training is specified.
+        if eval_at_fit_end and state.max_duration is not None:
+            # check if we are at the end of training
+            # handle different eval_intervals in order to not duplicate validation steps
+            if eval_interval.unit == TimeUnit.EPOCH and event == Event.EPOCH_END:
+                if state.max_duration.unit == TimeUnit.EPOCH and state.max_duration.value == int(state.timestamp.epoch):
+                    return True
+                if state.max_duration.unit == TimeUnit.BATCH and state.max_duration.value == int(state.timestamp.batch):
+                    return True
+            if eval_interval.unit == TimeUnit.BATCH and event == Event.BATCH_END:
+                if state.max_duration.unit == TimeUnit.EPOCH:
+                    num_epochs = state.max_duration.value
+                    num_total_steps = num_epochs * int(state.dataloader_len)
+                elif state.max_duration.unit == TimeUnit.BATCH:
+                    num_total_steps = state.max_duration.value
+                if num_total_steps == int(state.timestamp.batch):
+                    return True
         if eval_interval.unit == TimeUnit.EPOCH:
             return int(state.timestamp.epoch) % int(eval_interval) == 0 and event == Event.EPOCH_END
         if eval_interval.unit == TimeUnit.BATCH:
@@ -48,8 +69,10 @@ def evaluate_periodically(eval_interval: Union[str, Time, int]):
 
     return should_eval
 
+log = logging.getLogger(__name__)
 
-class Evaluator:
+
+class Evaluator(Callback):
     """A wrapper for a dataloader to include metrics that apply to a specific dataset.
 
     For example, :class:`~.nlp_metrics.CrossEntropyLoss` metric for NLP models.
@@ -106,6 +129,7 @@ class Evaluator:
         label: str,
         dataloader: Union[DataSpec, Iterable, Dict[str, Any]],
         metrics: Union[Metric, MetricCollection],
+        summary: Optional[List[str]] = None,
         subset_num_batches: Optional[int] = None,
         eval_interval: Optional[Union[int, str, Time, Callable[[State, Event], bool]]] = None,
     ):
@@ -118,9 +142,27 @@ class Evaluator:
             self.metrics = MetricCollection([metrics])
         else:
             self.metrics = metrics
-
+        self.summary = summary
         self.subset_num_batches = subset_num_batches
         self.eval_interval = eval_interval
+
+    def init(self, state: State, logger: Logger) -> None:
+        # add metric summary to WandB metrics
+        if self.summary is not None:
+            try:
+                import wandb
+            except ImportError:
+                log.warning(f"WandB not installed so {label} summary '{self.summary}' will not be logged.")
+
+            if wandb.run is None:
+                raise ValueError("wandb must be initialized before serialization.")
+
+            if len(self.metrics.keys()) != len(self.summary):
+                raise ValueError("There must be a summary statistic for every metric.")
+
+            for metric_index, metric_name in enumerate(self.metrics.keys()):
+                wandb.define_metric(name=f'metrics/{self.label}/{metric_name}', summary=self.summary[metric_index])
+
 
     @property
     def eval_interval(self):
