@@ -5,9 +5,9 @@ train_dataset:
     split: train
     max_samples: 275184000
     max_seq_len: 128
-    group_method: truncate # TODO: check that the code for this one is right
+    group_method: truncate  # TODO: check that the code for this one is right
     tokenizer_name: bert-base-uncased
-    use_masked_lm: true # TODO: check that the code for this one is right
+    use_masked_lm: true  # TODO: check that the code for this one is right
     mlm_probability: 0.15
     seed: 17
     shuffle: true
@@ -60,7 +60,8 @@ loggers:
         secret_environ: GCS_SECRET
 callbacks:
   - speed_monitor:
-      window_size: 500 
+      window_size: 500
+  - lr_monitor: {}
 max_duration: 1ep  # Baseline is 256M samples, 7 epochs is ~280M samples
 train_batch_size: 4000
 eval_batch_size: 2000
@@ -73,7 +74,7 @@ dataloader:
   num_workers: 1
   timeout: 0
   prefetch_factor: 2
-grad_accum: 8
+grad_accum: 1
 precision: amp
 grad_clip_norm: -1.0
 eval_interval: 3500ba
