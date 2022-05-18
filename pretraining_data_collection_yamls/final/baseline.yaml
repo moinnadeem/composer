@@ -1,0 +1,41 @@
+---
+run_name: bert-baseline
+instance_type: r1z1-g8-a100
+image: mosaicml/moin
+integrations:
+  - integration_type: "wandb"
+    project: bert-pareto-curves
+    entity: mosaicml
+parameters:
+  inherits:
+    - model.yaml
+  _n_gpus: 8
+  grad_accum: 1
+  algorithms:
+    act_fn_search:
+      use_gated: false
+      use_rmsnorm: false
+      use_fln: false
+      use_triton: false
+      act_fn_name: no_replacement
+command: >-
+  set -e -x
+
+  source ~/env/bin/activate
+
+  pip install wheel
+
+  git clone {{ git_repo }} /root/composer
+
+  cd /root/composer
+
+  pip install xformers
+
+  echo 'Checking out composer branch {{ git_branch }}'
+
+  git checkout {{ git_branch }}
+
+  pip install -e ".[all]"
+
+  composer -n {{ parameters['_n_gpus'] }} examples/run_composer_trainer.py
+  -f /mnt/config/parameters.yaml
