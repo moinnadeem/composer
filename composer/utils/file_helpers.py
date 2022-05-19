@@ -8,6 +8,7 @@ from __future__ import annotations
 import os
 import pathlib
 import re
+import time
 from typing import TYPE_CHECKING, Iterator, Optional, Union
 
 import requests
@@ -245,6 +246,8 @@ FORMAT_NAME_WITH_DIST_AND_TIME_TABLE = """
 +----------------------------+------------------------------------------------------------+
 """
 
+START_WCT = time.time()
+
 
 def format_name_with_dist_and_time(format_str: str, run_name: str, timestamp: Timestamp, **extra_format_kwargs: object):
     formatted_str = format_str.format(
@@ -266,6 +269,9 @@ def format_name_with_dist_and_time(format_str: str, run_name: str, timestamp: Ti
         batch_wct=timestamp.batch_wct.total_seconds(),
         **extra_format_kwargs,
     )
+    elapsed_duration = round(time.time() - START_WCT)
+    formatted_str = f'{formatted_str}-wct{elapsed_duration}'
+
     return formatted_str
 
 

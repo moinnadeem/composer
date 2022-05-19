@@ -74,6 +74,7 @@ def load_checkpoint(
     strict_model_weights: bool = False,
     chunk_size: int = 1_048_576,
     progress_bar: bool = True,
+    ignore_model_keys: Optional[List[str]] = None,
 ):
     """Load a checkpoint from a local file, URI, or cloud object store into ``state``.
 
@@ -149,6 +150,7 @@ def load_checkpoint(
                 extracted_checkpoint_folder,
                 load_weights_only=load_weights_only,
                 strict_model_weights=strict_model_weights,
+                ignore_model_keys=ignore_model_keys,
             )
         finally:
             # Wait for all ranks to finish restoring the checkpoint before releasing the tempdir, since tempdir can
@@ -263,11 +265,23 @@ def _restore_checkpoint(
     extracted_checkpoint_folder: Optional[str],
     load_weights_only: bool,
     strict_model_weights: bool,
+    ignore_model_keys: Optional[List[str]] = None,
 ) -> Optional[List[Dict[str, Any]]]:
     """Restore a checkpoint into ``state`` and returns the rng state dicts (if ``load_weights_only`` is False)."""
     # Now, all ranks load the checkpoint that local rank zero downloaded
     state_dict = torch.load(composer_states_filepath, map_location='cpu')
     log.debug(f"Loaded checkpoint with keys {state_dict.keys()} and state keys {state_dict['state'].keys()}")
+
+    if ignore_model_keys:
+        if state.is_model_deepspeed:
+            deepspeed_states_path = f"{extracted_checkpoint_folder}/{_DEEPSPEED_TAG}/mp_rank_00_model_states.pt"
+            deepspeed_states = torch.load(deepspeed_states_path, map_location="cpu")
+            for k in ignore_model_keys:
+                del deepspeed_states['module'][k]
+            torch.save(deepspeed_states, deepspeed_states_path)
+        else:
+            for k in ignore_model_keys:
+                del state_dict['state']['model'][k]
 
     if state.is_model_deepspeed:
         if extracted_checkpoint_folder is None:

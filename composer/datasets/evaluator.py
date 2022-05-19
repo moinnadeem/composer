@@ -54,6 +54,7 @@ class EvaluatorHparams(hp.Hparams):
         doc=textwrap.dedent("""Name of the metrics for the evaluator. Can be a torchmetrics metric name or the
         class name of a metric returned by model.metrics(). If None (the default), uses all metrics in the model"""),
         default=None)
+    summary: Optional[List[str]] = hp.optional(doc="A list of summary statistics for each metric.", default=None)
 
     def initialize_object(self, model: ComposerModel, batch_size: int, dataloader_hparams: DataLoaderHparams):
         """Initialize an :class:`~.evaluator.Evaluator`
@@ -100,6 +101,7 @@ class EvaluatorHparams(hp.Hparams):
             label=self.label,
             dataloader=dataloader,
             metrics=evaluator_metrics,
+            summary=self.summary,
             eval_interval=self.eval_interval,
             subset_num_batches=self.subset_num_batches,
         )
