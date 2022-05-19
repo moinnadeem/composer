@@ -1,6 +1,8 @@
 ---
 run_name: bert-baseline
-instance_type: r1z1-g8-a100
+gpu_type: a100_80gb
+gpu_num: 8
+platform: r1z1
 image: mosaicml/moin
 integrations:
   - integration_type: "wandb"
@@ -9,7 +11,6 @@ integrations:
 parameters:
   inherits:
     - model.yaml
-  _n_gpus: 8
   grad_accum: 1
   algorithms:
     act_fn_search:
@@ -25,7 +26,7 @@ command: >-
 
   pip install wheel
 
-  git clone {{ git_repo }} /root/composer
+  git clone http://github.com/moinnadeem/composer /root/composer
 
   cd /root/composer
 
@@ -33,9 +34,9 @@ command: >-
 
   echo 'Checking out composer branch {{ git_branch }}'
 
-  git checkout {{ git_branch }}
+  git checkout moin/cleaned_gated
 
   pip install -e ".[all]"
 
-  composer -n {{ parameters['_n_gpus'] }} examples/run_composer_trainer.py
+  composer -n8 examples/run_composer_trainer.py
   -f /mnt/config/parameters.yaml
