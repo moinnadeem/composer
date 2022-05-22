@@ -1,17 +1,11 @@
 ---
-run_name: bert-baseline
-gpu_type: a100_80gb
-gpu_num: 8
-platform: r1z1
-image: mosaicml/moin
-integrations:
-  - integration_type: "wandb"
-    project: bert-pareto-curves
-    entity: mosaicml
+run_name: "bert-baseline"
+inherits:
+  - command.yaml
+  - platform.yaml
+  - integrations.yaml
+  - model.yaml
 parameters:
-  inherits:
-    - model.yaml
-  grad_accum: 1
   algorithms:
     act_fn_search:
       use_gated: false
@@ -19,24 +13,9 @@ parameters:
       use_fln: false
       use_triton: false
       act_fn_name: no_replacement
-command: >-
-  set -e -x
-
-  source ~/env/bin/activate
-
-  pip install wheel
-
-  git clone http://github.com/moinnadeem/composer /root/composer
-
-  cd /root/composer
-
-  pip install xformers
-
-  echo 'Checking out composer branch {{ git_branch }}'
-
-  git checkout moin/cleaned_gated
-
-  pip install -e ".[all]"
-
-  composer -n8 examples/run_composer_trainer.py
-  -f /mnt/config/parameters.yaml
+      w0_bias: false
+      w1_bias: false
+grid:
+  parameters.algorithms.act_fn_search.act_fn_name:
+    - no_replacement
+    - relu
