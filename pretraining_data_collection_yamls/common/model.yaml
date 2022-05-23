@@ -81,4 +81,5 @@ parameters:
   eval_interval: 3500ba
   save_folder: bert_checkpoints
   save_interval: 3500ba
+  save_artifact_name: "{run_name}/checkpoints/ep{epoch}-ba{batch}-rank{rank}-{total_wct}wct"
   run_name: "{job[run_name]}"
