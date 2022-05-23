@@ -1,5 +1,5 @@
 ---
-run_name: "moin-bert-{mcli_sweep[parameters][algorithms][act_fn_search][act_fn_name]}-gated"
+run_name: "bert-gated-{job[algorithms][act_fn_search][act_fn_name]}-w0-{job[algorithms][act_fn_search][w0_bias]}-w1-{job[algorithms][act_fn_search][w1_bias]}"
 inherits:
   - common/command.yaml
   - common/platform.yaml
@@ -11,7 +11,15 @@ parameters:
     act_fn_search:
       use_gated: true
       act_fn_name: no_replacement
+      w0_bias: false
+      w1_bias: false
 grid:
+  parameters.algorithms.act_fn_search.w0_bias:
+    - true
+    - false
+  parameters.algorithms.act_fn_search.w1_bias:
+    - true
+    - false
   parameters.algorithms.act_fn_search.act_fn_name:
     - squared_relu
     - relu
