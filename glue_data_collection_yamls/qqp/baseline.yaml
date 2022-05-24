@@ -1,52 +1,20 @@
 ---
-name: qqp-pareto-curves  # Name of the sweep - it'll be used in run names
-project: qqp-pareto-curves  # Name of the Weights and Biases project to use
-image: mosaicml/moin  # Name of the docker image to use
-git_repo: https://github.com/moinnadeem/composer.git  # Name of the git repo to clone - can be full URL or path under github.com
-git_branch: moin/cleaned_gated  # Name of the git branch/tag/commit to use
-command: >-
-  source ~/env/bin/activate
-
-  pip install wheel
-
-  git clone {{ git_repo }} /root/composer
-
-  cd /root/composer
-
-  pip install xformers
-
-  echo 'Checking out composer branch {{ git_branch }}'
-
-  git checkout {{ git_branch }}
-
-  pip install -e ".[all]"
-
-  composer -n {{ parameters['_n_gpus'] }} examples/run_composer_trainer.py
-  -f /mnt/config/parameters.yaml --run_name $(WANDB_NAME)
-instance: r1z1-g1-a100  # Name of the instance you want to run on, e.g. r1z1-g8-a100
-run_type: convergence  # Type of run you want to perform (convergence is default and only one support currently)
-algorithms:
-  - act_fn_search
-models: qqp
-parameters:  # Any parameter overrides you want to use IN EVERY RUN should be specified here
-  run_name: qqp-baseline
-  _n_gpus: 1
-  grad_accum: 1
-  algorithms:
-    act_fn_search:
-      use_gated: false
-      use_rmsnorm: false
-      use_fln: false
-      use_triton: false
-      act_fn_name: no_replacement
+run_name: qqp-baseline
+inherits:
+  - ../common/command.yaml
+  - ../common/platform.yaml
+  - ../common/integrations.yaml
+  - ../common/qqp.yaml
+  - ../algorithms/act_fn_search.yaml
 grid:
-  load_path:
-    - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-baseline/checkpoints/ep0-ba3500-rank0-wct2041
-    - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-baseline/checkpoints/ep0-ba14000-rank0-wct8034
-    - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-baseline/checkpoints/ep0-ba24500-rank0-wct13954
-    - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-baseline/checkpoints/ep0-ba35000-rank0-wct19812
-    - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-baseline/checkpoints/ep0-ba45500-rank0-wct25636
-    - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-baseline/checkpoints/ep0-ba56000-rank0-wct31470
-    - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-baseline/checkpoints/ep0-ba66500-rank0-wct37312
-    - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-baseline/checkpoints/ep1-ba68796-rank0-wct38583
-named_like: moin-qqp-baseline
+  parameters:
+    load_path:
+      - https://storage.googleapis.com/bert_gold_checkpoints/bert-baseline/checkpoints/ep0-ba3500-rank0-1937.090282wct
+      - https://storage.googleapis.com/bert_gold_checkpoints/bert-baseline/checkpoints/ep0-ba10500-rank0-5887.791467wct
+      - https://storage.googleapis.com/bert_gold_checkpoints/bert-baseline/checkpoints/ep0-ba14000-rank0-7825.713635wct
+      - https://storage.googleapis.com/bert_gold_checkpoints/bert-baseline/checkpoints/ep0-ba24500-rank0-13636.201245wct
+      - https://storage.googleapis.com/bert_gold_checkpoints/bert-baseline/checkpoints/ep0-ba35000-rank0-19448.66686wct
+      - https://storage.googleapis.com/bert_gold_checkpoints/bert-baseline/checkpoints/ep0-ba45500-rank0-25271.707943wct
+      - https://storage.googleapis.com/bert_gold_checkpoints/bert-baseline/checkpoints/ep0-ba56000-rank0-31099.97671wct
+      - https://storage.googleapis.com/bert_gold_checkpoints/bert-baseline/checkpoints/ep0-ba66500-rank0-36923.381923wct
+      - https://storage.googleapis.com/bert_gold_checkpoints/bert-baseline/checkpoints/ep1-ba68796-rank0-38195.91974wct

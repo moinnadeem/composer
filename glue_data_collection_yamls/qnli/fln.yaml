@@ -1,52 +1,22 @@
 ---
-name: qnli-pareto-curves  # Name of the sweep - it'll be used in run names
-project: qnli-pareto-curves  # Name of the Weights and Biases project to use
-image: mosaicml/moin  # Name of the docker image to use
-git_repo: https://github.com/moinnadeem/composer.git  # Name of the git repo to clone - can be full URL or path under github.com
-git_branch: moin/cleaned_gated  # Name of the git branch/tag/commit to use
-command: >-
-  source ~/env/bin/activate
-
-  pip install wheel
-
-  git clone {{ git_repo }} /root/composer
-
-  cd /root/composer
-
-  pip install xformers
-
-  echo 'Checking out composer branch {{ git_branch }}'
-
-  git checkout {{ git_branch }}
-
-  pip install -e ".[all]"
-
-  composer -n {{ parameters['_n_gpus'] }} examples/run_composer_trainer.py
-  -f /mnt/config/parameters.yaml --run_name $(WANDB_NAME)
-instance: r1z1-g1-a100  # Name of the instance you want to run on, e.g. r1z1-g8-a100
-run_type: convergence  # Type of run you want to perform (convergence is default and only one support currently)
-algorithms:
-  - act_fn_search
-models: qnli  # The name of the model you want to use - should match the name of a YAML file in your local composer "models" directory unless you are fully specifying model parameters in the `parameters` section
-parameters:  # Any parameter overrides you want to use IN EVERY RUN should be specified here
-  run_name: qnli-fln
-  _n_gpus: 1
-  grad_accum: 1
+run_name: qnli-fln
+inherits:
+  - ../common/command.yaml
+  - ../common/platform.yaml
+  - ../common/integrations.yaml
+  - ../common/qnli.yaml
+  - ../algorithms/act_fn_search.yaml
+parameters:
   algorithms:
     act_fn_search:
-      use_gated: false
-      use_rmsnorm: false
       use_fln: true
-      use_triton: false
-      act_fn_name: no_replacement
-named_like: moin-qnli-fln
 grid:
   load_path:
-    - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-fln/checkpoints/ep0-ba3500-rank0-wct1815
-    - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-fln/checkpoints/ep0-ba14000-rank0-wct7228
-    - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-fln/checkpoints/ep0-ba24500-rank0-wct12679
-    - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-fln/checkpoints/ep0-ba35000-rank0-wct18076
-    - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-fln/checkpoints/ep0-ba45500-rank0-wct23367
-    - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-fln/checkpoints/ep0-ba56000-rank0-wct28684
-    - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-fln/checkpoints/ep0-ba66500-rank0-wct33994
-    - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-fln/checkpoints/ep1-ba68796-rank0-wct35155
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln/checkpoints/ep0-ba3500-rank0-1774.784322wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln/checkpoints/ep0-ba14000-rank0-7117.469247wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln/checkpoints/ep0-ba24500-rank0-12546.455181wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln/checkpoints/ep0-ba35000-rank0-18010.611044wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln/checkpoints/ep0-ba45500-rank0-23528.807159wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln/checkpoints/ep0-ba56000-rank0-29002.154504wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln/checkpoints/ep0-ba66500-rank0-34439.884868wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln/checkpoints/ep1-ba68796-rank0-35606.31588wct
