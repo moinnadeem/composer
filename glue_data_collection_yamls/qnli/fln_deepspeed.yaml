@@ -12,12 +12,13 @@ parameters:
     act_fn_search:
       use_fln: true
 grid:
-  load_path:
-    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln/checkpoints/ep0-ba3500-rank0-1540.065014wct.tar
-    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln/checkpoints/ep0-ba14000-rank0-6240.897556wct.tar
-    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln/checkpoints/ep0-ba24500-rank0-10939.991223wct.tar
-    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln/checkpoints/ep0-ba35000-rank0-15664.157928wct.tar
-    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln/checkpoints/ep0-ba45500-rank0-20388.143694wct.tar
-    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln/checkpoints/ep0-ba56000-rank0-25062.473918wct.tar
-    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln/checkpoints/ep0-ba66500-rank0-29789.259823wct.tar
-    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln/checkpoints/ep1-ba68796-rank0-30841.079484wct.tar
+  parameters:
+    load_path:
+      - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln/checkpoints/ep0-ba3500-rank0-1540.065014wct.tar
+      - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln/checkpoints/ep0-ba14000-rank0-6240.897556wct.tar
+      - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln/checkpoints/ep0-ba24500-rank0-10939.991223wct.tar
+      - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln/checkpoints/ep0-ba35000-rank0-15664.157928wct.tar
+      - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln/checkpoints/ep0-ba45500-rank0-20388.143694wct.tar
+      - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln/checkpoints/ep0-ba56000-rank0-25062.473918wct.tar
+      - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln/checkpoints/ep0-ba66500-rank0-29789.259823wct.tar
+      - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln/checkpoints/ep1-ba68796-rank0-30841.079484wct.tar
