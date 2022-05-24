@@ -12,7 +12,7 @@ parameters:
       use_gated: true
       act_fn_name: swish
 grid:
-  load_path:
+  parameters.load_path:
     - https://storage.googleapis.com/bert_gold_checkpoints/moin-bert-swish-gated/checkpoints/ep0-ba3500-rank0-1932.647142wct
     - https://storage.googleapis.com/bert_gold_checkpoints/moin-bert-swish-gated/checkpoints/ep0-ba14000-rank0-7733.410979wct
     - https://storage.googleapis.com/bert_gold_checkpoints/moin-bert-swish-gated/checkpoints/ep0-ba24500-rank0-13570.068458wct
