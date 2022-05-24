@@ -1,41 +1,14 @@
 ---
-name: bert-pareto-curves-long  # Name of the sweep - it'll be used in run names
-project: bert-pareto-curves-long  # Name of the Weights and Biases project to use
-image: mosaicml/moin  # Name of the docker image to use
-git_repo: https://github.com/moinnadeem/composer.git  # Name of the git repo to clone - can be full URL or path under github.com
-git_branch: moin/cleaned_gated  # Name of the git branch/tag/commit to use
-command: >-
-  source ~/env/bin/activate
-
-  pip install wheel
-
-  git clone {{ git_repo }} /root/composer
-
-  cd /root/composer
-
-  pip install xformers
-
-  echo 'Checking out composer branch {{ git_branch }}'
-
-  git checkout {{ git_branch }}
-
-  pip install -e ".[all]"
-
-  composer -n {{ parameters['_n_gpus'] }} examples/run_composer_trainer.py
-  -f /mnt/config/parameters.yaml --run_name $(WANDB_NAME)
-instance: r1z1-g8-a100  # Name of the instance you want to run on, e.g. r1z1-g8-a100
-run_type: convergence  # Type of run you want to perform (convergence is default and only one support currently)
-algorithms:
-  - act_fn_search
-models: bert-base_streaming  # The name of the model you want to use - should match the name of a YAML file in your local composer "models" directory unless you are fully specifying model parameters in the `parameters` section
-parameters:  # Any parameter overrides you want to use IN EVERY RUN should be specified here
-  _n_gpus: 8
-  grad_accum: 1
+run_name: mnli-fln-gegelu
+inherits:
+  - ../common/command.yaml
+  - ../common/platform.yaml
+  - ../common/integrations.yaml
+  - ../common/mnli.yaml
+  - ../algorithms/act_fn_search.yaml
+parameters:
   algorithms:
     act_fn_search:
       use_gated: true
-      use_rmsnorm: false
       use_fln: true
-      use_triton: false
       act_fn_name: gelu
-named_like: moin-bert-fln-gegelu

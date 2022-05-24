@@ -1,0 +1,5 @@
+parameters:
+  precision: fp16
+  deepspeed:
+    zero_optimization:
+      stage: 1
