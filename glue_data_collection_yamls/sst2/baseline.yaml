@@ -7,14 +7,13 @@ inherits:
   - ../common/sst2.yaml
   - ../algorithms/act_fn_search.yaml
 grid:
-  parameters:
-    load_path:
-      - https://storage.googleapis.com/bert_gold_checkpoints/bert-baseline/checkpoints/ep0-ba3500-rank0-1937.090282wct
-      - https://storage.googleapis.com/bert_gold_checkpoints/bert-baseline/checkpoints/ep0-ba10500-rank0-5887.791467wct
-      - https://storage.googleapis.com/bert_gold_checkpoints/bert-baseline/checkpoints/ep0-ba14000-rank0-7825.713635wct
-      - https://storage.googleapis.com/bert_gold_checkpoints/bert-baseline/checkpoints/ep0-ba24500-rank0-13636.201245wct
-      - https://storage.googleapis.com/bert_gold_checkpoints/bert-baseline/checkpoints/ep0-ba35000-rank0-19448.66686wct
-      - https://storage.googleapis.com/bert_gold_checkpoints/bert-baseline/checkpoints/ep0-ba45500-rank0-25271.707943wct
-      - https://storage.googleapis.com/bert_gold_checkpoints/bert-baseline/checkpoints/ep0-ba56000-rank0-31099.97671wct
-      - https://storage.googleapis.com/bert_gold_checkpoints/bert-baseline/checkpoints/ep0-ba66500-rank0-36923.381923wct
-      - https://storage.googleapis.com/bert_gold_checkpoints/bert-baseline/checkpoints/ep1-ba68796-rank0-38195.91974wct
+  parameters.load_path:
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-baseline/checkpoints/ep0-ba3500-rank0-1937.090282wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-baseline/checkpoints/ep0-ba10500-rank0-5887.791467wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-baseline/checkpoints/ep0-ba14000-rank0-7825.713635wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-baseline/checkpoints/ep0-ba24500-rank0-13636.201245wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-baseline/checkpoints/ep0-ba35000-rank0-19448.66686wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-baseline/checkpoints/ep0-ba45500-rank0-25271.707943wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-baseline/checkpoints/ep0-ba56000-rank0-31099.97671wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-baseline/checkpoints/ep0-ba66500-rank0-36923.381923wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-baseline/checkpoints/ep1-ba68796-rank0-38195.91974wct

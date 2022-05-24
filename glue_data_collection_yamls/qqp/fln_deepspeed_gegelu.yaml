@@ -14,13 +14,12 @@ parameters:
       use_fln: true
       act_fn_name: gelu
 grid:
-  parameters:
-    load_path:
-      - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-fln-deepspeed/checkpoints/ep0-ba3500-rank0-wct1642.tar
-      - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-fln-deepspeed/checkpoints/ep0-ba14000-rank0-wct6547.tar
-      - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-fln-deepspeed/checkpoints/ep0-ba24500-rank0-wct11825.tar
-      - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-fln-deepspeed/checkpoints/ep0-ba35000-rank0-wct16665.tar
-      - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-fln-deepspeed/checkpoints/ep0-ba45500-rank0-wct21389.tar
-      - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-fln-deepspeed/checkpoints/ep0-ba56000-rank0-wct26117.tar
-      - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-fln-deepspeed/checkpoints/ep0-ba66500-rank0-wct30824.tar
-      - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-fln-deepspeed/checkpoints/ep1-ba68796-rank0-wct31846.tar
+  parameters.load_path:
+    - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-fln-deepspeed/checkpoints/ep0-ba3500-rank0-wct1642.tar
+    - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-fln-deepspeed/checkpoints/ep0-ba14000-rank0-wct6547.tar
+    - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-fln-deepspeed/checkpoints/ep0-ba24500-rank0-wct11825.tar
+    - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-fln-deepspeed/checkpoints/ep0-ba35000-rank0-wct16665.tar
+    - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-fln-deepspeed/checkpoints/ep0-ba45500-rank0-wct21389.tar
+    - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-fln-deepspeed/checkpoints/ep0-ba56000-rank0-wct26117.tar
+    - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-fln-deepspeed/checkpoints/ep0-ba66500-rank0-wct30824.tar
+    - https://storage.googleapis.com/moin_bert_checkpoints/moin-bert-fln-deepspeed/checkpoints/ep1-ba68796-rank0-wct31846.tar

@@ -12,13 +12,12 @@ parameters:
       use_gated: true
       act_fn_name: gelu
 grid:
-  parameters:
-    load_path:
-      - https://storage.googleapis.com/bert_gold_checkpoints/moin-bert-gelu-gated/checkpoints/ep0-ba3500-rank0-2107.501236wct
-      - https://storage.googleapis.com/bert_gold_checkpoints/moin-bert-gelu-gated/checkpoints/ep0-ba14000-rank0-8188.534166wct
-      - https://storage.googleapis.com/bert_gold_checkpoints/moin-bert-gelu-gated/checkpoints/ep0-ba24500-rank0-14157.659751wct
-      - https://storage.googleapis.com/bert_gold_checkpoints/moin-bert-gelu-gated/checkpoints/ep0-ba35000-rank0-20122.39905wct
-      - https://storage.googleapis.com/bert_gold_checkpoints/moin-bert-gelu-gated/checkpoints/ep0-ba45500-rank0-26117.46806wct
-      - https://storage.googleapis.com/bert_gold_checkpoints/moin-bert-gelu-gated/checkpoints/ep0-ba56000-rank0-32114.708692wct
-      - https://storage.googleapis.com/bert_gold_checkpoints/moin-bert-gelu-gated/checkpoints/ep0-ba66500-rank0-38116.163044wct
-      - https://storage.googleapis.com/bert_gold_checkpoints/moin-bert-gelu-gated/checkpoints/ep1-ba68796-rank0-39419.19743wct
+  parameters.load_path:
+    - https://storage.googleapis.com/bert_gold_checkpoints/moin-bert-gelu-gated/checkpoints/ep0-ba3500-rank0-2107.501236wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/moin-bert-gelu-gated/checkpoints/ep0-ba14000-rank0-8188.534166wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/moin-bert-gelu-gated/checkpoints/ep0-ba24500-rank0-14157.659751wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/moin-bert-gelu-gated/checkpoints/ep0-ba35000-rank0-20122.39905wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/moin-bert-gelu-gated/checkpoints/ep0-ba45500-rank0-26117.46806wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/moin-bert-gelu-gated/checkpoints/ep0-ba56000-rank0-32114.708692wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/moin-bert-gelu-gated/checkpoints/ep0-ba66500-rank0-38116.163044wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/moin-bert-gelu-gated/checkpoints/ep1-ba68796-rank0-39419.19743wct

@@ -12,13 +12,12 @@ parameters:
       use_gated: true
       act_fn_name: squared_relu
 grid:
-  parameters:
-    load_path:
-      - https://storage.googleapis.com/bert_gold_checkpoints/moin-bert-squared_relu-gated/checkpoints/ep0-ba3500-rank0-2141.069205wct
-      - https://storage.googleapis.com/bert_gold_checkpoints/moin-bert-squared_relu-gated/checkpoints/ep0-ba14000-rank0-8509.841763wct
-      - https://storage.googleapis.com/bert_gold_checkpoints/moin-bert-squared_relu-gated/checkpoints/ep0-ba24500-rank0-14866.436213wct
-      - https://storage.googleapis.com/bert_gold_checkpoints/moin-bert-squared_relu-gated/checkpoints/ep0-ba35000-rank0-21070.081858wct
-      - https://storage.googleapis.com/bert_gold_checkpoints/moin-bert-squared_relu-gated/checkpoints/ep0-ba45500-rank0-27255.377994wct
-      - https://storage.googleapis.com/bert_gold_checkpoints/moin-bert-squared_relu-gated/checkpoints/ep0-ba56000-rank0-33438.665774wct
-      - https://storage.googleapis.com/bert_gold_checkpoints/moin-bert-squared_relu-gated/checkpoints/ep0-ba66500-rank0-39606.897576wct
-      - https://storage.googleapis.com/bert_gold_checkpoints/moin-bert-squared_relu-gated/checkpoints/ep1-ba68796-rank0-40978.081855wct
+  parameters.load_path:
+    - https://storage.googleapis.com/bert_gold_checkpoints/moin-bert-squared_relu-gated/checkpoints/ep0-ba3500-rank0-2141.069205wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/moin-bert-squared_relu-gated/checkpoints/ep0-ba14000-rank0-8509.841763wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/moin-bert-squared_relu-gated/checkpoints/ep0-ba24500-rank0-14866.436213wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/moin-bert-squared_relu-gated/checkpoints/ep0-ba35000-rank0-21070.081858wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/moin-bert-squared_relu-gated/checkpoints/ep0-ba45500-rank0-27255.377994wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/moin-bert-squared_relu-gated/checkpoints/ep0-ba56000-rank0-33438.665774wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/moin-bert-squared_relu-gated/checkpoints/ep0-ba66500-rank0-39606.897576wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/moin-bert-squared_relu-gated/checkpoints/ep1-ba68796-rank0-40978.081855wct
