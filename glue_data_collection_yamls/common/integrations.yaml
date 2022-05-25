@@ -1,3 +1,7 @@
 integrations:
   - integration_type: "wandb"
-    project: "{mcli_sweep[parameters][train_dataset][glue][task]}-pareto-curves"
+parameters:
+  loggers:
+    wandb:
+      project: "{mcli_sweep[parameters][train_dataset][glue][task]}-pareto-curves"
+      tags: may_24_data_collection

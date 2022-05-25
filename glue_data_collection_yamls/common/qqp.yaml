@@ -21,6 +21,8 @@ parameters:
         metric_names:
           - Accuracy
           - BinaryF1Score
+        summary:
+          - max
   model:
     bert_classification:
       num_labels: 2

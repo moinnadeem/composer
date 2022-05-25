@@ -20,6 +20,8 @@ parameters:
             drop_last: false
         metric_names:
           - Accuracy
+        summary:
+          - max
   model:
     bert_classification:
       num_labels: 2

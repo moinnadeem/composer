@@ -20,6 +20,8 @@ parameters:
             drop_last: false
         metric_names:
           - Accuracy
+        summary:
+          - max
     - evaluator:
         label: glue_mnli_mismatched
         eval_dataset:
@@ -32,6 +34,8 @@ parameters:
             drop_last: false
         metric_names:
           - Accuracy
+        summary:
+          - max
   model:
     bert_classification:
       num_labels: 3

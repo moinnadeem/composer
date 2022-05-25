@@ -11,7 +11,7 @@ parameters:
     act_fn_search:
       use_fln: true
 grid:
-  load_path:
+  parameters.load_path:
     - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln/checkpoints/ep0-ba3500-rank0-1774.784322wct
     - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln/checkpoints/ep0-ba14000-rank0-7117.469247wct
     - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln/checkpoints/ep0-ba24500-rank0-12546.455181wct
