@@ -53,7 +53,7 @@ _MNLI_BASE_KWARGS = dict(
     },
     label_classes=["entailment", "neutral", "contradiction"],
     label_column="gold_label",
-    data_url="https://dl.fbaipublicfiles.com/glue/data/MNLI.zip",
+    data_url="https://storage.googleapis.com/moin_glue_datasets/MNLI.zip",
     data_dir="MNLI",
     citation=textwrap.dedent(
         """\

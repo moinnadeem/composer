@@ -112,10 +112,7 @@ extra_deps["dev"] = [
     "myst-parser==0.16.1",
     "sphinx_panels==0.6.0",
     "sphinxcontrib-images==0.9.4",
-    # need webdataset to run pyright. Including here to pass pyright.
-    # TODO Remove once https://github.com/mosaicml/composer/issues/771 is fixed.
-    "webdataset==0.1.103",
-    "pytest_codeblocks==0.15.0"
+    "pytest_codeblocks==0.15.0",
 ]
 
 extra_deps["deepspeed"] = [
@@ -146,12 +143,6 @@ extra_deps["coco"] = [
 extra_deps["nlp"] = [
     "transformers>=4.11,<5",
     "datasets>=1.14,<2",
-]
-
-extra_deps["webdataset"] = [
-    # PyPI does not permit git dependencies. See https://github.com/mosaicml/composer/issues/771
-    # "webdataset @ git+https://github.com/mosaicml/webdataset.git@dev"
-    "wurlitzer>=3.0.2,<4",
 ]
 
 extra_deps["mlperf"] = [

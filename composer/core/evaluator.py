@@ -63,6 +63,7 @@ def evaluate_periodically(eval_interval: Union[str, Time, int], eval_at_fit_end:
 
     return should_eval
 
+
 log = logging.getLogger(__name__)
 
 
@@ -118,8 +119,6 @@ class Evaluator(Callback):
             evenly divide the training duration.
     """
 
-    _eval_interval: Optional[Callable[[State, Event], bool]]
-
     def __init__(
         self,
         *,
@@ -141,6 +140,7 @@ class Evaluator(Callback):
             self.metrics = metrics
         self.summary = summary
         self.subset_num_batches = subset_num_batches
+        self._eval_interval = None
         self.eval_interval = eval_interval
 
     def init(self, state: State, logger: Logger) -> None:
@@ -159,7 +159,6 @@ class Evaluator(Callback):
 
             for metric_index, metric_name in enumerate(self.metrics.keys()):
                 wandb.define_metric(name=f'metrics/{self.label}/{metric_name}', summary=self.summary[metric_index])
-
 
     @property
     def eval_interval(self):
