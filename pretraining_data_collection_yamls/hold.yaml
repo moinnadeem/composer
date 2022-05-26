@@ -1,0 +1,7 @@
+---
+run_name: "bert-baseline"
+inherits:
+  - common/platform.yaml
+  - common/integrations.yaml
+  - common/hold.yaml
+  - algorithms/act_fn_search.yaml

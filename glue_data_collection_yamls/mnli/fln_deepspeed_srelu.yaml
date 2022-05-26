@@ -1,0 +1,25 @@
+---
+run_name: mnli-fln-deepspeed-srelu
+inherits:
+  - ../common/command.yaml
+  - ../common/platform.yaml
+  - ../common/integrations.yaml
+  - ../common/mnli.yaml
+  - ../algorithms/act_fn_search.yaml
+  - ../algorithms/deepspeed.yaml
+parameters:
+  algorithms:
+    act_fn_search:
+      use_fln: true
+      use_gated: true
+      act_fn_name: squared_relu
+grid:
+  parameters.load_path:
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-deepspeed-squared_relu-gated/checkpoints/ep0-ba3500-rank0-1655.435549wct.tar
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-deepspeed-squared_relu-gated/checkpoints/ep0-ba14000-rank0-6565.357886wct.tar
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-deepspeed-squared_relu-gated/checkpoints/ep0-ba24500-rank0-11574.835432wct.tar
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-deepspeed-squared_relu-gated/checkpoints/ep0-ba35000-rank0-16857.014162wct.tar
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-deepspeed-squared_relu-gated/checkpoints/ep0-ba45500-rank0-21819.740664wct.tar
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-deepspeed-squared_relu-gated/checkpoints/ep0-ba56000-rank0-26788.477185wct.tar
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-deepspeed-squared_relu-gated/checkpoints/ep0-ba66500-rank0-31854.548627wct.tar
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-deepspeed-squared_relu-gated/checkpoints/ep1-ba68796-rank0-32940.605329wct.tar

@@ -1,0 +1,20 @@
+---
+run_name: "bert-deepspeed-{mcli_sweep[parameters][algorithms][act_fn_search][act_fn_name]}-gated"
+inherits:
+  - common/command.yaml
+  - common/platform.yaml
+  - common/integrations.yaml
+  - common/model.yaml
+  - algorithms/act_fn_search.yaml
+  - algorithms/deepspeed.yaml
+parameters:
+  algorithms:
+    act_fn_search:
+      use_gated: true
+      act_fn_name: no_replacement
+grid:
+  parameters.algorithms.act_fn_search.act_fn_name:
+    - squared_relu
+    - relu
+    - gelu
+    - swish

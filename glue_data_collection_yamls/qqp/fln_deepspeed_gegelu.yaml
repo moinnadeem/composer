@@ -1,0 +1,25 @@
+---
+run_name: qqp-fln-deepspeed-gegelu
+inherits:
+  - ../common/command.yaml
+  - ../common/platform.yaml
+  - ../common/integrations.yaml
+  - ../common/qqp.yaml
+  - ../algorithms/act_fn_search.yaml
+  - ../algorithms/deepspeed.yaml
+parameters:
+  algorithms:
+    act_fn_search:
+      use_fln: true
+      use_gated: true
+      act_fn_name: gelu
+grid:
+  parameters.load_path:
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-deepspeed-gelu-gated/checkpoints/ep0-ba3500-rank0-1683.784929wct.tar
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-deepspeed-gelu-gated/checkpoints/ep0-ba14000-rank0-6739.801225wct.tar
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-deepspeed-gelu-gated/checkpoints/ep0-ba24500-rank0-11899.378287wct.tar
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-deepspeed-gelu-gated/checkpoints/ep0-ba35000-rank0-17303.04905wct.tar
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-deepspeed-gelu-gated/checkpoints/ep0-ba45500-rank0-22421.077589wct.tar
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-deepspeed-gelu-gated/checkpoints/ep0-ba56000-rank0-27576.569353wct.tar
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-deepspeed-gelu-gated/checkpoints/ep0-ba66500-rank0-32735.469738wct.tar
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-deepspeed-gelu-gated/checkpoints/ep1-ba68796-rank0-33839.937118wct.tar

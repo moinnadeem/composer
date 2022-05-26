@@ -1,5 +1,5 @@
 parameters:
   precision: fp16
-  deepspeed:
+  deepspeed_config:
     zero_optimization:
       stage: 1

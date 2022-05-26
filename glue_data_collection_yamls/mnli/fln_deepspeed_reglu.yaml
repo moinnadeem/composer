@@ -1,0 +1,25 @@
+---
+run_name: mnli-fln-deepspeed-reglu
+inherits:
+  - ../common/command.yaml
+  - ../common/platform.yaml
+  - ../common/integrations.yaml
+  - ../common/mnli.yaml
+  - ../algorithms/act_fn_search.yaml
+  - ../algorithms/deepspeed.yaml
+parameters:
+  algorithms:
+    act_fn_search:
+      use_fln: true
+      use_gated: true
+      act_fn_name: relu
+grid:
+  parameters.load_path:
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-deepspeed-relu-gated/checkpoints/ep0-ba3500-rank0-1649.297434wct.tar
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-deepspeed-relu-gated/checkpoints/ep0-ba14000-rank0-6560.508636wct.tar
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-deepspeed-relu-gated/checkpoints/ep0-ba24500-rank0-11502.995932wct.tar
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-deepspeed-relu-gated/checkpoints/ep0-ba35000-rank0-16463.681686wct.tar
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-deepspeed-relu-gated/checkpoints/ep0-ba45500-rank0-21404.425425wct.tar
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-deepspeed-relu-gated/checkpoints/ep0-ba56000-rank0-26434.717854wct.tar
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-deepspeed-relu-gated/checkpoints/ep0-ba66500-rank0-31446.975243wct.tar
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-deepspeed-relu-gated/checkpoints/ep1-ba68796-rank0-32526.723514wct.tar

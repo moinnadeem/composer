@@ -1,0 +1,25 @@
+---
+run_name: qqp-fln-deepspeed-swiglu
+inherits:
+  - ../common/command.yaml
+  - ../common/platform.yaml
+  - ../common/integrations.yaml
+  - ../common/qqp.yaml
+  - ../algorithms/act_fn_search.yaml
+  - ../algorithms/deepspeed.yaml
+parameters:
+  algorithms:
+    act_fn_search:
+      use_fln: true
+      use_gated: true
+      act_fn_name: swish
+grid:
+  parameters.load_path:
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-deepspeed-swish-gated/checkpoints/ep0-ba3500-rank0-1646.233079wct.tar
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-deepspeed-swish-gated/checkpoints/ep0-ba14000-rank0-6580.023239wct.tar
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-deepspeed-swish-gated/checkpoints/ep0-ba24500-rank0-11657.600699wct.tar
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-deepspeed-swish-gated/checkpoints/ep0-ba35000-rank0-16999.902349wct.tar
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-deepspeed-swish-gated/checkpoints/ep0-ba45500-rank0-22027.48705wct.tar
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-deepspeed-swish-gated/checkpoints/ep0-ba56000-rank0-27038.508712wct.tar
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-deepspeed-swish-gated/checkpoints/ep0-ba66500-rank0-32136.079954wct.tar
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-deepspeed-swish-gated/checkpoints/ep1-ba68796-rank0-33229.668197wct.tar

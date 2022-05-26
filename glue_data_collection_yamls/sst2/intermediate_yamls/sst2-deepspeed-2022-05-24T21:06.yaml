@@ -1,0 +1,94 @@
+command: 'set -e -x
+
+  git clone http://github.com/moinnadeem/composer /root/composer
+
+  cd /root/composer
+
+  echo ''Checking out composer branch {{ git_branch }}''
+
+  git checkout moin/cleaned_gated
+
+  pip install --user -e ".[all]"
+
+  composer examples/run_composer_trainer.py -f /mnt/config/parameters.yaml'
+gpu_num: 1
+gpu_type: a100_80gb
+image: mosaicml/moin
+integrations:
+- integration_type: wandb
+parameters:
+  algorithms:
+    act_fn_search:
+      act_fn_name: no_replacement
+      use_fln: false
+      use_gated: false
+      use_rmsnorm: false
+      use_triton: false
+      w0_bias: false
+      w1_bias: false
+  callbacks:
+  - lr_monitor: {}
+  dataloader:
+    num_workers: 8
+    persistent_workers: true
+    pin_memory: true
+    prefetch_factor: 2
+    timeout: 0
+  deepspeed: {}
+  device:
+    gpu: {}
+  eval_batch_size: 16
+  eval_interval: 500ba
+  evaluators:
+  - evaluator:
+      eval_dataset:
+        glue:
+          drop_last: false
+          max_seq_length: 256
+          shuffle: false
+          split: validation
+          task: sst2
+          tokenizer_name: bert-base-uncased
+      label: glue_sst2
+      metric_names:
+      - Accuracy
+  grad_accum: 1
+  load_chunk_size: 8192
+  load_path: https://storage.googleapis.com/bert_gold_checkpoints/bert-deepspeed/checkpoints/ep0-ba56000-rank0-31996.274282wct.tar
+  load_strict_model_weights: false
+  load_weights_only: true
+  loggers:
+    wandb:
+      project: sst2-pareto-curves
+      tags: may_24_data_collection
+  max_duration: 3ep
+  model:
+    bert_classification:
+      num_labels: 2
+      pretrained_model_name: bert-base-uncased
+      tokenizer_name: bert-base-uncased
+      use_pretrained: true
+  optimizer:
+    decoupled_adamw:
+      betas:
+      - 0.9
+      - 0.98
+      eps: 1.0e-06
+      lr: 3.0e-05
+      weight_decay: 3.0e-06
+  precision: fp16
+  schedulers:
+  - linear_decay_with_warmup:
+      t_warmup: 0.06dur
+  seed: 1
+  train_batch_size: 16
+  train_dataset:
+    glue:
+      drop_last: false
+      max_seq_length: 256
+      shuffle: false
+      split: train
+      task: sst2
+      tokenizer_name: bert-base-uncased
+platform: r1z1
+run_name: sst2-deepspeed
