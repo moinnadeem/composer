@@ -50,6 +50,7 @@ class ActFnSearchHparams(AlgorithmHparams):
     def initialize_object(self) -> "Primer":
         return ActFnSearch(**asdict(self))
 
+
 class AGCHparams(AlgorithmHparams):
     """See :class:`AGC`"""
     clipping_threshold: float = hp.optional(
