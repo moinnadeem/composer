@@ -61,7 +61,7 @@ parameters:
   load_strict_model_weights: false
   load_chunk_size: 8192
 grid:
-  seed:
+  parameters.seed:
     - 1
     - 2
     - 3
