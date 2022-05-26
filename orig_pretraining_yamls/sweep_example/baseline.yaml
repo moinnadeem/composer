@@ -1,0 +1,21 @@
+---
+run_name: "bert-baseline"
+inherits:
+  - command.yaml
+  - platform.yaml
+  - integrations.yaml
+  - model.yaml
+parameters:
+  algorithms:
+    act_fn_search:
+      use_gated: false
+      use_rmsnorm: false
+      use_fln: false
+      use_triton: false
+      act_fn_name: no_replacement
+      w0_bias: false
+      w1_bias: false
+grid:
+  parameters.algorithms.act_fn_search.act_fn_name:
+    - no_replacement
+    - relu

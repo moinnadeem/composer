@@ -1,0 +1,22 @@
+---
+run_name: qnli-fln
+inherits:
+  - ../common/command.yaml
+  - ../common/platform.yaml
+  - ../common/integrations.yaml
+  - ../common/qnli.yaml
+  - ../algorithms/act_fn_search.yaml
+parameters:
+  algorithms:
+    act_fn_search:
+      use_fln: true
+grid:
+  parameters.load_path:
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln/checkpoints/ep0-ba3500-rank0-1774.784322wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln/checkpoints/ep0-ba14000-rank0-7117.469247wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln/checkpoints/ep0-ba24500-rank0-12546.455181wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln/checkpoints/ep0-ba35000-rank0-18010.611044wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln/checkpoints/ep0-ba45500-rank0-23528.807159wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln/checkpoints/ep0-ba56000-rank0-29002.154504wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln/checkpoints/ep0-ba66500-rank0-34439.884868wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln/checkpoints/ep1-ba68796-rank0-35606.31588wct

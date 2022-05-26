@@ -1,0 +1,3 @@
+parameters:
+  precision: fp16
+  deepspeed: {}

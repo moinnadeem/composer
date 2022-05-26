@@ -1,0 +1,10 @@
+parameters:
+  algorithms:
+    act_fn_search:
+      use_gated: false
+      use_rmsnorm: false
+      use_fln: false
+      use_triton: false
+      act_fn_name: no_replacement
+      w0_bias: false
+      w1_bias: false

@@ -1,0 +1,15 @@
+command: >-
+  set -e -x
+
+  git clone http://github.com/moinnadeem/composer /root/composer
+
+  cd /root/composer
+
+  echo 'Checking out composer branch {{ git_branch }}'
+
+  git checkout moin/cleaned_gated
+
+  pip install --user -e ".[all]"
+
+  composer examples/run_composer_trainer.py
+  -f /mnt/config/parameters.yaml

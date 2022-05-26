@@ -1,0 +1,23 @@
+---
+run_name: sst2-relu-gated
+inherits:
+  - ../common/command.yaml
+  - ../common/platform.yaml
+  - ../common/integrations.yaml
+  - ../common/sst2.yaml
+  - ../algorithms/act_fn_search.yaml
+parameters:
+  algorithms:
+    act_fn_search:
+      use_gated: true
+      act_fn_name: relu
+grid:
+  parameters.load_path:
+    - https://storage.googleapis.com/bert_gold_checkpoints/moin-bert-relu-gated/checkpoints/ep0-ba3500-rank0-1965.373174wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/moin-bert-relu-gated/checkpoints/ep0-ba14000-rank0-7821.46864wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/moin-bert-relu-gated/checkpoints/ep0-ba24500-rank0-13619.144119wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/moin-bert-relu-gated/checkpoints/ep0-ba35000-rank0-19424.75716wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/moin-bert-relu-gated/checkpoints/ep0-ba45500-rank0-25194.842364wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/moin-bert-relu-gated/checkpoints/ep0-ba56000-rank0-30966.217322wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/moin-bert-relu-gated/checkpoints/ep0-ba66500-rank0-36735.919987wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/moin-bert-relu-gated/checkpoints/ep1-ba68796-rank0-38000.00624wct

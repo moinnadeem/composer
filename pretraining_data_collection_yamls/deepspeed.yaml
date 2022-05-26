@@ -1,0 +1,9 @@
+---
+run_name: "bert-deepspeed"
+inherits:
+  - common/command.yaml
+  - common/platform.yaml
+  - common/integrations.yaml
+  - common/model.yaml
+  - algorithms/act_fn_search.yaml
+  - algorithms/deepspeed.yaml

@@ -10,6 +10,7 @@ import dataclasses
 import datetime
 import logging
 import os
+import textwrap
 import warnings
 from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Optional, Sequence, Tuple, Union, cast
 
@@ -351,7 +352,9 @@ class TrainerHparams(hp.Hparams):
 
     # Optimizer and Scheduler
     optimizers: Optional[OptimizerHparams] = hp.optional(doc="Optimizer to use", default=None)
+
     schedulers: List[SchedulerHparams] = hp.optional(doc="Schedulers", default_factory=list)
+
     scale_schedule_ratio: float = hp.optional(
         doc="Ratio by which to scale the training duration and learning rate schedules.",
         default=1.0,
@@ -397,6 +400,10 @@ class TrainerHparams(hp.Hparams):
             "(if the checkpoint is in a cloud bucket). Set to None (the default) to skip loading from a checkpoint.")),
         default=None,
     )
+    load_ignore_model_keys: Optional[List[str]] = hp.optional(doc=textwrap.dedent("""\
+        Whether to ignore certain model keys from the checkpoint.
+        For example, keys that might have mismatched shapes."""),
+                                                              default=None)
     load_object_store: Optional[LibcloudObjectStoreHparams] = hp.optional(
         doc=(("If the checkpoint is in an object store (i.e. AWS S3 or Google Cloud Storage), the parameters for "
               "connecting to the cloud provider object store. Otherwise, if the checkpoint is a local filepath, "
@@ -455,6 +462,7 @@ class TrainerHparams(hp.Hparams):
         doc="Number of checkpoints to persist locally. Set to -1 to never delete checkpoints.",
         default=-1,
     )
+    mnli_mid_training: bool = hp.optional("Whether to enable MNLI checkpoints for mid-training.", default=False)
 
     # Graceful Resumption
     autoresume: bool = hp.optional(doc=(("Whether or not to enable autoresume, which allows for stopping and resuming "
@@ -653,6 +661,7 @@ class TrainerHparams(hp.Hparams):
             load_object_store=load_object_store,
             load_weights_only=self.load_weights_only,
             load_strict_model_weights=self.load_strict_model_weights,
+            load_ignore_model_keys=self.load_ignore_model_keys,
             load_chunk_size=self.load_chunk_size,
             load_progress_bar=self.load_progress_bar,
 
@@ -665,6 +674,7 @@ class TrainerHparams(hp.Hparams):
             save_interval=self.save_interval,
             save_weights_only=self.save_weights_only,
             save_num_checkpoints_to_keep=self.save_num_checkpoints_to_keep,
+            mnli_mid_training=self.mnli_mid_training,
 
             # Graceful Resumption
             autoresume=self.autoresume,

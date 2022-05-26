@@ -1,0 +1,19 @@
+---
+run_name: sst2-deepspeed
+inherits:
+  - ../common/command.yaml
+  - ../common/platform.yaml
+  - ../common/integrations.yaml
+  - ../common/sst2.yaml
+  - ../algorithms/act_fn_search.yaml
+  - ../algorithms/deepspeed.yaml
+grid:
+  parameters.load_path:
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-deepspeed/checkpoints/ep0-ba3500-rank0-1622.149531wct.tar
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-deepspeed/checkpoints/ep0-ba14000-rank0-6653.108731wct.tar
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-deepspeed/checkpoints/ep0-ba24500-rank0-12839.030568wct.tar
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-deepspeed/checkpoints/ep0-ba35000-rank0-19236.955179wct.tar
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-deepspeed/checkpoints/ep0-ba45500-rank0-25603.237955wct.tar
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-deepspeed/checkpoints/ep0-ba56000-rank0-31996.274282wct.tar
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-deepspeed/checkpoints/ep0-ba66500-rank0-38354.76639wct.tar
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-deepspeed/checkpoints/ep1-ba68796-rank0-39744.378336wct.tar

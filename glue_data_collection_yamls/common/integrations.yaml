@@ -1,0 +1,3 @@
+integrations:
+  - integration_type: "wandb"
+    project: "{mcli_sweep[parameters][train_dataset][glue][task]}-pareto-curves"

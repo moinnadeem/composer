@@ -671,6 +671,8 @@ class Trainer:
         load_object_store: Optional[Union[LibcloudObjectStore, LoggerDestination]] = None,
         load_weights_only: bool = False,
         load_strict_model_weights: bool = False,
+        load_ignore_model_keys: Optional[List[str]] = None,
+        # TODO (Koin): discuss the implementation of removing keys from a model
         load_chunk_size: int = 1_048_576,
         load_progress_bar: bool = True,
 
@@ -684,6 +686,7 @@ class Trainer:
         save_interval: Union[str, int, Time, Callable[[State, Event], bool]] = "1ep",
         save_weights_only: bool = False,
         save_num_checkpoints_to_keep: int = -1,
+        mnli_mid_training: bool = False,
 
         # Graceful Resumption
         autoresume: bool = False,
@@ -789,11 +792,13 @@ class Trainer:
                     stream=console_stream,
                 ))
 
+        if mnli_mid_training:
+            checkpoint_name = load_path.split("/")[-1]
+            run_name = f'{run_name}/{checkpoint_name}'
+            print("Using mid-training with run name", run_name)
+
         # Logger
         self.logger = Logger(state=self.state, destinations=loggers, run_name=run_name)
-
-        # Callbacks
-        self.state.callbacks[:] = list(cast(List[Callback], loggers)) + self.state.callbacks
 
         # Checkpoint Saving
         self._checkpoint_saver = None
@@ -810,6 +815,29 @@ class Trainer:
                 num_checkpoints_to_keep=save_num_checkpoints_to_keep,
             )
             self.state.callbacks.append(self._checkpoint_saver)
+
+        # Evaluators
+        if eval_dataloader is None:
+            evaluators: List[Evaluator] = []
+        else:
+            evaluators = [
+                ensure_evaluator(evaluator, model.metrics(train=False)) for evaluator in ensure_tuple(eval_dataloader)
+            ]
+            _set_evaluator_interval_and_subset_num_batches(
+                evaluators=evaluators,
+                eval_interval=eval_interval,
+                subset_num_batches=eval_subset_num_batches,
+            )
+        if len(evaluators) == 0:
+            if eval_subset_num_batches != -1:
+                raise ValueError("Specifying `eval_subset_num_batches` without an `eval_dataloader` has no effect.")
+            if eval_interval != 1:
+                raise ValueError("Specifying `eval_interval` without an `eval_dataloader` has no effect.")
+        self.state.evaluators = evaluators
+
+        # Callbacks
+        self.state.callbacks[:] = list(cast(List[Callback], loggers)) + self.state.callbacks + list(
+            cast(List[Callback], self.state.evaluators))
 
         # The Engine
         self.engine = Engine(state=self.state, logger=self.logger)
@@ -946,7 +974,9 @@ class Trainer:
                                               load_weights_only=load_weights_only,
                                               strict_model_weights=load_strict_model_weights,
                                               chunk_size=load_chunk_size,
-                                              progress_bar=load_progress_bar)
+                                              progress_bar=load_progress_bar,
+                                              ignore_model_keys=load_ignore_model_keys)
+
             log.info(f"Setting seed to {self.state.seed}")
             reproducibility.seed_all(self.state.seed)
 

@@ -1,0 +1,4 @@
+gpu_type: a100_80gb
+gpu_num: 8
+platform: r1z1
+image: mosaicml/moin

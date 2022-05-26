@@ -1,0 +1,14 @@
+---
+run_name: cola-fln-gegelu
+inherits:
+  - ../common/command.yaml
+  - ../common/platform.yaml
+  - ../common/integrations.yaml
+  - ../common/cola.yaml
+  - ../algorithms/act_fn_search.yaml
+parameters:
+  algorithms:
+    act_fn_search:
+      use_gated: true
+      use_fln: true
+      act_fn_name: gelu

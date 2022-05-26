@@ -17,6 +17,7 @@ Please refer to the `GLUE`_ benchmark for more details.
 """
 
 import logging
+import os
 from dataclasses import dataclass
 from typing import Optional, cast
 
@@ -114,7 +115,11 @@ class GLUEHparams(DatasetHparams, SyntheticHparamsMixin):
 
             log.info(f"Loading {self.task.upper()} on rank {dist.get_global_rank()}")
             download_config = datasets.utils.DownloadConfig(max_retries=self.max_network_retries)
-            dataset = datasets.load_dataset("glue", self.task, split=self.split, download_config=download_config)
+            local_glue_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "moin_glue.py")
+            dataset = datasets.load_dataset(local_glue_path,
+                                            self.task,
+                                            split=self.split,
+                                            download_config=download_config)
 
         log.info(f"Starting tokenization step by preprocessing over {dataloader_hparams.num_workers} threads!")
         text_column_names = _task_to_keys[self.task]

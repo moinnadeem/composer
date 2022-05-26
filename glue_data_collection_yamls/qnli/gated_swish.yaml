@@ -1,0 +1,23 @@
+---
+run_name: qnli-swish-gated
+inherits:
+  - ../common/command.yaml
+  - ../common/platform.yaml
+  - ../common/integrations.yaml
+  - ../common/qnli.yaml
+  - ../algorithms/act_fn_search.yaml
+parameters:
+  algorithms:
+    act_fn_search:
+      use_gated: true
+      act_fn_name: swish
+grid:
+  parameters.load_path:
+    - https://storage.googleapis.com/bert_gold_checkpoints/moin-bert-swish-gated/checkpoints/ep0-ba3500-rank0-1932.647142wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/moin-bert-swish-gated/checkpoints/ep0-ba14000-rank0-7733.410979wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/moin-bert-swish-gated/checkpoints/ep0-ba24500-rank0-13570.068458wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/moin-bert-swish-gated/checkpoints/ep0-ba35000-rank0-19357.2508wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/moin-bert-swish-gated/checkpoints/ep0-ba45500-rank0-25141.946622wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/moin-bert-swish-gated/checkpoints/ep0-ba56000-rank0-30921.646159wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/moin-bert-swish-gated/checkpoints/ep0-ba66500-rank0-36712.305017wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/moin-bert-swish-gated/checkpoints/ep1-ba68796-rank0-37980.3879wct
