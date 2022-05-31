@@ -88,8 +88,9 @@ def _add_precision_config(config: Dict[str, Any], state: State):
                      "Mosaic trainer."))
         ds_precision = Precision.BF16
     if "amp" in config and "enabled" in config["amp"] and config["amp"]["enabled"]:
-        raise ValueError(("DeepSpeed is configured to use Apex AMP, but this is unsupported by the "
-                          "Mosaic trainer."))
+        log.warning(("DeepSpeed is configured to use Apex AMP, but this is unsupported by the "
+                     "Mosaic trainer."))
+        ds_precision = Precision.AMP
 
     if ds_precision is not None and ds_precision != precision:
         raise ValueError((f"Provided DeepSpeed configuration specifies precision={ds_precision}, "
@@ -105,6 +106,11 @@ def _add_precision_config(config: Dict[str, Any], state: State):
             config["bf16"] = cast(Dict[str, Any], {"enabled": True})
         bf16_config = config["bf16"]
         assert isinstance(bf16_config, dict)
+    elif precision == Precision.AMP:
+        if "amp" not in config:
+            config["amp"] = cast(Dict[str, Any], {"enabled": True})
+        amp_config = config["amp"]
+        assert isinstance(amp_config, dict)
 
 
 def _add_other_config(config: Dict[str, Any], grad_clip_norm: float):
