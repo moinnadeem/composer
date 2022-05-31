@@ -393,7 +393,8 @@ def _validate_credentials(
                 is_transient_error = any(x in str(e) for x in ("408", "409", "425", "429", "500", "503", '504'))
                 if not is_transient_error:
                     raise e
-            if retry_counter < 4:
+            # high retry counter threshold to avoid too many "too many requests" issues when launching many jobs
+            if retry_counter < 10:
                 retry_counter += 1
                 # exponential backoff
                 sleep_time = 2**(retry_counter - 1)
