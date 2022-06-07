@@ -1,0 +1,24 @@
+---
+run_name: mnli-fln-relu-gated
+inherits:
+  - ../common/command.yaml
+  - ../common/platform.yaml
+  - ../common/integrations.yaml
+  - ../common/mnli.yaml
+  - ../algorithms/act_fn_search.yaml
+parameters:
+  algorithms:
+    act_fn_search:
+      use_fln: true
+      use_gated: true
+      act_fn_name: relu
+grid:
+  parameters.load_path:
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-relu-gated/checkpoints/ep0-ba3500-rank0-1722.036065wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-relu-gated/checkpoints/ep0-ba14000-rank0-6842.270243wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-relu-gated/checkpoints/ep0-ba24500-rank0-11963.088077wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-relu-gated/checkpoints/ep0-ba35000-rank0-17257.645704wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-relu-gated/checkpoints/ep0-ba45500-rank0-22481.614351wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-relu-gated/checkpoints/ep0-ba56000-rank0-27717.377139wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-relu-gated/checkpoints/ep0-ba66500-rank0-32949.264173wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-relu-gated/checkpoints/ep1-ba68796-rank0-34090.970101wct

@@ -1,5 +1,5 @@
 ---
-run_name: "bert-fln-deepspeed-{mcli_sweep[parameters][algorithms][act_fn_search][act_fn_name]}-gated"
+run_name: "bert-fln-deepspeed-{mcli_sweep[parameters][algorithms][act_fn_search][act_fn_name]}-gated-{mcli_sweep[parameters][precision]}"
 inherits:
   - common/command.yaml
   - common/platform.yaml
@@ -19,3 +19,8 @@ grid:
     - relu
     - gelu
     - swish
+  parameters.precision:
+    - fp16
+    - bf16
+    - amp
+    - fp32

@@ -1,0 +1,24 @@
+---
+run_name: mnli-fln-squared-relu-gated
+inherits:
+  - ../common/command.yaml
+  - ../common/platform.yaml
+  - ../common/integrations.yaml
+  - ../common/mnli.yaml
+  - ../algorithms/act_fn_search.yaml
+parameters:
+  algorithms:
+    act_fn_search:
+      use_fln: true
+      use_gated: true
+      act_fn_name: squared_relu
+grid:
+  parameters.load_path:
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-squared_relu-gated/checkpoints/ep0-ba3500-rank0-1928.445663wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-squared_relu-gated/checkpoints/ep0-ba14000-rank0-7693.851486wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-squared_relu-gated/checkpoints/ep0-ba24500-rank0-13471.288609wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-squared_relu-gated/checkpoints/ep0-ba35000-rank0-19245.167119wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-squared_relu-gated/checkpoints/ep0-ba45500-rank0-25026.986992wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-squared_relu-gated/checkpoints/ep0-ba56000-rank0-30819.617245wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-squared_relu-gated/checkpoints/ep0-ba66500-rank0-36619.692172wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-squared_relu-gated/checkpoints/ep1-ba68796-rank0-37883.06286wct

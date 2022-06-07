@@ -1,0 +1,24 @@
+---
+run_name: qqp-fln-gelu-gated
+inherits:
+  - ../common/command.yaml
+  - ../common/platform.yaml
+  - ../common/integrations.yaml
+  - ../common/qqp.yaml
+  - ../algorithms/act_fn_search.yaml
+parameters:
+  algorithms:
+    act_fn_search:
+      use_fln: true
+      use_gated: true
+      act_fn_name: gelu
+grid:
+  parameters.load_path:
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-gelu-gated/checkpoints/ep0-ba3500-rank0-1770.79811wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-gelu-gated/checkpoints/ep0-ba14000-rank0-7079.000417wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-gelu-gated/checkpoints/ep0-ba24500-rank0-12401.857236wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-gelu-gated/checkpoints/ep0-ba35000-rank0-17724.480248wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-gelu-gated/checkpoints/ep0-ba45500-rank0-23052.644408wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-gelu-gated/checkpoints/ep0-ba56000-rank0-28398.482546wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-gelu-gated/checkpoints/ep0-ba66500-rank0-33712.628997wct
+    - https://storage.googleapis.com/bert_gold_checkpoints/bert-fln-gelu-gated/checkpoints/ep1-ba68796-rank0-34876.430832wct
