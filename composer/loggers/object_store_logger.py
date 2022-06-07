@@ -376,13 +376,34 @@ def _validate_credentials(
     provider_kwargs: Optional[Dict[str, Any]],
     object_name_to_test: str,
 ) -> None:
-    # Validates the credentails by attempting to touch a file in the bucket
-    # raises a LibcloudError if there was a credentials failure.
+    retry_counter = 0
     object_store = LibcloudObjectStore(provider=provider, container=container, provider_kwargs=provider_kwargs)
-    object_store.upload_object_via_stream(
-        obj=b"credentials_validated_successfully",
-        object_name=object_name_to_test,
-    )
+    while True:
+        try:
+            # Validates the credentails by attempting to touch a file in the bucket
+            # raises a LibcloudError if there was a credentials failure.
+            object_store.upload_object_via_stream(
+                obj=b"credentials_validated_successfully",
+                object_name=object_name_to_test,
+            )
+        except (LibcloudError, ProtocolError, TimeoutError, ConnectionError) as e:
+            if isinstance(e, LibcloudError):
+                # The S3 driver does not encode the error code in an easy-to-parse manner
+                # So first checking if the error code is non-transient
+                is_transient_error = any(x in str(e) for x in ("408", "409", "425", "429", "500", "503", '504'))
+                if not is_transient_error:
+                    raise e
+            # high retry counter threshold to avoid too many "too many requests" issues when launching many jobs
+            if retry_counter < 10:
+                retry_counter += 1
+                # exponential backoff
+                sleep_time = 2**(retry_counter - 1)
+                log.warning("Request failed. Sleeping %s seconds and retrying", sleep_time, exc_info=e, stack_info=True)
+                time.sleep(sleep_time)
+                continue
+            raise e
+
+        break
 
 
 def _upload_worker(

@@ -4,6 +4,7 @@
 """Helpers for the `DeepSpeed <https://www.deepspeed.ai>`_ integration with Composer."""
 
 import copy
+import logging
 import warnings
 from typing import Any, Dict, cast
 
@@ -14,6 +15,8 @@ from composer.core import Precision, State
 from composer.core.types import Batch
 from composer.utils import dist
 from composer.utils.iter_helpers import map_collection
+
+log = logging.getLogger(__name__)
 
 __all__ = ["_fix_batch_precision_for_deepspeed", "_parse_deepspeed_config"]
 
@@ -81,11 +84,13 @@ def _add_precision_config(config: Dict[str, Any], state: State):
     if "fp16" in config and "enabled" in config["fp16"] and config["fp16"]["enabled"]:
         ds_precision = Precision.FP16
     if "bf16" in config and "enabled" in config["bf16"] and config["bf16"]["enabled"]:
-        raise ValueError(("DeepSpeed is configured to use BFLOAT16, but this is unsupported by the "
-                          "Mosaic trainer."))
+        log.warning(("DeepSpeed is configured to use BFLOAT16, but this is unsupported by the "
+                     "Mosaic trainer."))
+        ds_precision = Precision.BF16
     if "amp" in config and "enabled" in config["amp"] and config["amp"]["enabled"]:
-        raise ValueError(("DeepSpeed is configured to use Apex AMP, but this is unsupported by the "
-                          "Mosaic trainer."))
+        log.warning(("DeepSpeed is configured to use Apex AMP, but this is unsupported by the "
+                     "Mosaic trainer."))
+        ds_precision = Precision.AMP
 
     if ds_precision is not None and ds_precision != precision:
         raise ValueError((f"Provided DeepSpeed configuration specifies precision={ds_precision}, "
@@ -96,6 +101,16 @@ def _add_precision_config(config: Dict[str, Any], state: State):
             config["fp16"] = cast(Dict[str, Any], {"enabled": True})
         fp16_config = config["fp16"]
         assert isinstance(fp16_config, dict)
+    elif precision == Precision.BF16:
+        if "bf16" not in config:
+            config["bf16"] = cast(Dict[str, Any], {"enabled": True})
+        bf16_config = config["bf16"]
+        assert isinstance(bf16_config, dict)
+    elif precision == Precision.AMP:
+        if "amp" not in config:
+            config["amp"] = cast(Dict[str, Any], {"enabled": True})
+        amp_config = config["amp"]
+        assert isinstance(amp_config, dict)
 
 
 def _add_other_config(config: Dict[str, Any], grad_clip_norm: float):
