@@ -89,7 +89,7 @@ def download_from_sftp(remote: str, local: str) -> None:
 
     with SSHClient() as ssh_client:
         # Connect SSH Client
-        ssh_client.load_system_host_keys(known_hosts_filename)
+        ssh_client.set_missing_host_key_policy(AutoAddPolicy)
         ssh_client.connect(
             hostname=hostname,
             port=port,
