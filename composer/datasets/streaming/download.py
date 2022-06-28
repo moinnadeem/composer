@@ -57,7 +57,7 @@ def download_from_sftp(remote: str, local: str) -> None:
         local (str): Local path (local filesystem).
     """
     try:
-        from paramiko import SSHClient
+        from paramiko import AutoAddPolicy, SSHClient
     except ImportError as e:
         raise MissingConditionalImportError(extra_deps_group='streaming', conda_package='paramiko') from e
 
