@@ -311,11 +311,17 @@ def _launch_processes(
             log.info('Launching process for local_rank(%s), global_rank(%s) with command(%s)', local_rank, global_rank,
                      cmd)
 
-            if local_rank == 0:
-                process = subprocess.Popen(
-                    cmd,
-                    text=True,
+            def _get_file(format: str):
+                filename = format.format(
+                    rank=global_rank,
+                    world_size=world_size,
+                    local_rank=local_rank,
+                    local_world_size=nproc,
+                    node_rank=node_rank,
                 )
+                return open(filename, 'x+')
+
+            if local_rank == 0:
                 stderr_file = _get_file(stderr_file_format)
                 process = subprocess.Popen(
                     cmd,
@@ -324,17 +330,6 @@ def _launch_processes(
                 )
                 process.stderr = stderr_file
             else:
-
-                def _get_file(format: str):
-                    filename = format.format(
-                        rank=global_rank,
-                        world_size=world_size,
-                        local_rank=local_rank,
-                        local_world_size=nproc,
-                        node_rank=node_rank,
-                    )
-                    return open(filename, 'x+')
-
                 stderr_file = _get_file(stderr_file_format)
                 stdout_file = _get_file(stdout_file_format)
 
