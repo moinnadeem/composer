@@ -135,7 +135,7 @@ def download_or_wait(remote: Optional[str],
                      local: str,
                      wait: bool = False,
                      max_retries: int = 2,
-                     timeout: float = 60) -> None:
+                     timeout: float = 120) -> None:
     """Downloads a file from remote to local, or waits for it to be downloaded.
 
     Does not do any thread safety checks, so we assume the calling function is using ``wait`` correctly.
