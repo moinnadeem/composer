@@ -316,6 +316,13 @@ def _launch_processes(
                     cmd,
                     text=True,
                 )
+                stderr_file = _get_file(stderr_file_format)
+                process = subprocess.Popen(
+                    cmd,
+                    stderr=stderr_file,
+                    text=True,
+                )
+                process.stderr = stderr_file
             else:
 
                 def _get_file(format: str):
