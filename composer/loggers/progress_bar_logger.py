@@ -102,8 +102,8 @@ def _patch_tqdm_progress_bar():
             fp.write(tqdm.utils._unicode(s))
             fp_flush()
 
-            # getattr(fp, "write", lambda x: None)("\n")
-            sys.stderr.write("\n")
+            getattr(fp, "write", lambda x: None)("\n")
+            # sys.stderr.write("\n")
 
         last_len = [0]
 
