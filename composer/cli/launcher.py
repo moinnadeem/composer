@@ -375,12 +375,15 @@ def _print_process_exit_status(global_rank: int, process: subprocess.Popen):
     else:
         process.stdout.seek(0)
         output = process.stdout.read()
+        output = output.strip()
 
     if process.stderr is None:
         stderr = None
     else:
         process.stderr.seek(0)
         stderr = process.stderr.read()
+        stderr = stderr.strip()
+
     exc = subprocess.CalledProcessError(
         process.returncode,
         cmd=process.args,

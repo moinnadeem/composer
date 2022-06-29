@@ -8,7 +8,7 @@ from __future__ import annotations
 import sys
 from typing import Any, Callable, Dict, List, Optional, TextIO, Union
 
-import tqdm.auto
+import tqdm
 
 from composer.core.state import State
 from composer.core.time import Timestamp, TimeUnit
@@ -84,6 +84,38 @@ class _ProgressBar:
         }
 
 
+def _patch_tqdm_progress_bar():
+
+    def new_status_printer(file):
+        """
+        Manage the printing and in-place updating of a line of characters.
+        Note that if the string is longer than a line, then in-place
+        updating may not work (it will print a new line at each refresh).
+        """
+        fp = file
+        fp_flush = getattr(fp, "flush", lambda: None)  # pragma: no cover
+        if fp in (sys.stderr, sys.stdout):
+            getattr(sys.stderr, "flush", lambda: None)()
+            getattr(sys.stdout, "flush", lambda: None)()
+
+        def fp_write(s):
+            fp.write(tqdm.utils._unicode(s))
+            fp_flush()
+
+            getattr(fp, "write", lambda x: None)("\n")
+
+        last_len = [0]
+
+        def print_status(s):
+            len_s = tqdm.utils.disp_len(s)
+            fp_write("\r" + s + (" " * max(last_len[0] - len_s, 0)))
+            last_len[0] = len_s
+
+        return print_status
+
+    tqdm.std.tqdm.status_printer = staticmethod(new_status_printer)
+
+
 class ProgressBarLogger(LoggerDestination):
     """Log metrics to the console and optionally show a progress bar.
 
@@ -133,6 +165,9 @@ class ProgressBarLogger(LoggerDestination):
         self.train_pbar: Optional[_ProgressBar] = None
         self.eval_pbar: Optional[_ProgressBar] = None
         self.is_train: Optional[bool] = None
+
+        if not sys.stdout.isatty():  # check if the current stdout stream is being piped to somewhere else
+            _patch_tqdm_progress_bar()
 
         if isinstance(console_log_level, str):
             console_log_level = LogLevel(console_log_level)
