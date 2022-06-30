@@ -169,7 +169,7 @@ class SFTPObjectStore(ObjectStore):
 
     @contextlib.contextmanager
     def _handle_transient_errors(self):
-        from paramiko import SSHException, ChannelException
+        from paramiko import ChannelException, SSHException
         try:
             yield
         except Exception as e:
