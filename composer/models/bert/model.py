@@ -96,7 +96,7 @@ def create_bert_mlm(use_pretrained: Optional[bool] = False,
 
     # setup the tokenizer
     if tokenizer_name:
-        tokenizer = transformers.AutoTokenizer.from_pretrained(tokenizer_name)
+        tokenizer = transformers.BertTokenizer.from_pretrained(tokenizer_name)
     else:
         tokenizer = None
 
@@ -199,7 +199,7 @@ def create_bert_classification(num_labels: Optional[int] = 2,
 
     # setup the tokenizer
     if tokenizer_name:
-        tokenizer = transformers.AutoTokenizer.from_pretrained(tokenizer_name)
+        tokenizer = transformers.BertTokenizer.from_pretrained(tokenizer_name)
     else:
         tokenizer = None
 
