@@ -99,11 +99,13 @@ def create_bert_mlm(use_pretrained: Optional[bool] = False,
         tokenizer = transformers.BertTokenizer.from_pretrained(tokenizer_name)
     else:
         tokenizer = None
-
     metrics = [
         LanguageCrossEntropy(ignore_index=-100, vocab_size=model.config.vocab_size),
         MaskedAccuracy(ignore_index=-100)
     ]
+    
+    model.resize_token_embeddings(len(tokenizer))
+    
     return HuggingFaceModel(model=model, tokenizer=tokenizer, use_logits=True, metrics=metrics)
 
 
@@ -210,4 +212,7 @@ def create_bert_classification(num_labels: Optional[int] = 2,
         BinaryF1Score(),
         MatthewsCorrCoef(num_classes=model.config.num_labels)
     ]
+    
+    model.resize_token_embeddings(len(tokenizer))
+    
     return HuggingFaceModel(model=model, tokenizer=tokenizer, use_logits=True, metrics=metrics)
