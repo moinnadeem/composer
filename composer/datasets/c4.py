@@ -97,7 +97,7 @@ class StreamingC4(StreamingDataset):
         self.group_method = group_method
 
         # Build tokenizer
-        self.tokenizer = transformers.AutoTokenizer.from_pretrained(self.tokenizer_name)
+        self.tokenizer = transformers.BertTokenizer.from_pretrained(self.tokenizer_name)
         if self.tokenizer.pad_token is None:
             # Some tokenizers (e.g. GPT2 tokenizer) have no padding token which causes bugs
             self.tokenizer.pad_token = self.tokenizer.eos_token
@@ -198,7 +198,7 @@ class C4Dataset(IterableDataset):
             )
 
         # Build tokenizer
-        self.tokenizer = transformers.AutoTokenizer.from_pretrained(tokenizer_name)
+        self.tokenizer = transformers.BertTokenizer.from_pretrained(tokenizer_name)
         if self.tokenizer.pad_token is None:
             # Some tokenizers (e.g. GPT2 tokenizer) have no padding token which causes bugs
             self.tokenizer.pad_token = self.tokenizer.eos_token
