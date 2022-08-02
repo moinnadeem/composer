@@ -110,7 +110,7 @@ class GLUEHparams(DatasetHparams, SyntheticHparamsMixin):
             # flatten the columnar dataset into one column
             tokenizer = generate_synthetic_tokenizer(tokenizer_family=self.tokenizer_name, dataset=dataset)
         else:
-            tokenizer = transformers.AutoTokenizer.from_pretrained(self.tokenizer_name)  #type: ignore (thirdparty)
+            tokenizer = transformers.BertTokenizer.from_pretrained(self.tokenizer_name)  #type: ignore (thirdparty)
 
             log.info(f'Loading {self.task.upper()} on rank {dist.get_global_rank()}')
             download_config = datasets.utils.DownloadConfig(max_retries=self.max_network_retries)
