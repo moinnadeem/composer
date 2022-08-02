@@ -857,8 +857,27 @@ class Trainer:
         # Logger
         self.logger = Logger(state=self.state, destinations=loggers)
 
+        # Evaluators
+        if eval_dataloader is None:
+            evaluators: List[Evaluator] = []
+        else:
+            evaluators = [
+                ensure_evaluator(evaluator, model.metrics(train=False)) for evaluator in ensure_tuple(eval_dataloader)
+            ]
+            _set_evaluator_interval_and_subset_num_batches(
+                evaluators=evaluators,
+                eval_interval=eval_interval,
+                subset_num_batches=eval_subset_num_batches,
+            )
+        if len(evaluators) == 0:
+            if eval_subset_num_batches != -1:
+                raise ValueError('Specifying `eval_subset_num_batches` without an `eval_dataloader` has no effect.')
+            if eval_interval != 1:
+                raise ValueError('Specifying `eval_interval` without an `eval_dataloader` has no effect.')
+        self.state.evaluators = evaluators
+        
         # Callbacks
-        self.state.callbacks[:] = list(cast(List[Callback], loggers)) + list(cast(List[Callback], self.evaluators)) + self.state.callbacks
+        self.state.callbacks[:] = list(cast(List[Callback], loggers)) + list(cast(List[Callback], self.state.evaluators)) + self.state.callbacks
 
         # Checkpoint Saving
         self._checkpoint_saver = None
@@ -916,25 +935,6 @@ class Trainer:
             self._scheduler_step_frequency = _get_default_scheduler_frequency(schedulers)
         else:
             self._scheduler_step_frequency = TimeUnit.BATCH if step_schedulers_every_batch else TimeUnit.EPOCH
-
-        # Evaluators
-        if eval_dataloader is None:
-            evaluators: List[Evaluator] = []
-        else:
-            evaluators = [
-                ensure_evaluator(evaluator, model.metrics(train=False)) for evaluator in ensure_tuple(eval_dataloader)
-            ]
-            _set_evaluator_interval_and_subset_num_batches(
-                evaluators=evaluators,
-                eval_interval=eval_interval,
-                subset_num_batches=eval_subset_num_batches,
-            )
-        if len(evaluators) == 0:
-            if eval_subset_num_batches != -1:
-                raise ValueError('Specifying `eval_subset_num_batches` without an `eval_dataloader` has no effect.')
-            if eval_interval != 1:
-                raise ValueError('Specifying `eval_interval` without an `eval_dataloader` has no effect.')
-        self.state.evaluators = evaluators
 
         # Some algorithms require specific settings
         self._backwards_create_graph = any(map(lambda x: x.backwards_create_graph, ensure_tuple(algorithms)))
