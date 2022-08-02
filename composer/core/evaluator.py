@@ -6,16 +6,20 @@
 from __future__ import annotations
 
 import copy
-from typing import Any, Callable, Dict, Iterable, Optional, Union
+import logging
+from typing import Any, Callable, Dict, Iterable, List, Optional, Union
 
 from torchmetrics import Metric, MetricCollection
 
+from composer.core import Callback
 from composer.core.data_spec import DataSpec, ensure_data_spec
 from composer.core.event import Event
 from composer.core.state import State
 from composer.core.time import Time, TimeUnit
 
 __all__ = ['Evaluator', 'evaluate_periodically', 'ensure_evaluator']
+
+log = logging.getLogger(__name__)
 
 
 def evaluate_periodically(eval_interval: Union[str, Time, int], eval_at_fit_end: bool = True):
@@ -64,7 +68,7 @@ def evaluate_periodically(eval_interval: Union[str, Time, int], eval_at_fit_end:
     return should_eval
 
 
-class Evaluator:
+class Evaluator(Callback):
     """A wrapper for a dataloader to include metrics that apply to a specific dataset.
 
     For example, :class:`.CrossEntropyLoss` metric for NLP models.
@@ -120,6 +124,7 @@ class Evaluator:
         metrics: Union[Metric, MetricCollection],
         subset_num_batches: Optional[int] = None,
         eval_interval: Optional[Union[int, str, Time, Callable[[State, Event], bool]]] = None,
+        summary: Optional[List[str]] = None,
     ):
         self.label = label
         self.dataloader = ensure_data_spec(dataloader)
@@ -134,6 +139,24 @@ class Evaluator:
         self.subset_num_batches = subset_num_batches
         self._eval_interval = None
         self.eval_interval = eval_interval
+        self.summary = summary
+
+    def init(self, state: State, logger: Logger) -> None:
+        # add metric summary to WandB metrics
+        if self.summary is not None:
+            try:
+                import wandb
+            except ImportError:
+                log.warning(f"WandB not installed so {label} summary '{self.summary}' will not be logged.")
+
+            if wandb.run is None:
+                raise ValueError("wandb must be initialized before serialization.")
+
+            if len(self.metrics.keys()) != len(self.summary):
+                raise ValueError("There must be a summary statistic for every metric.")
+
+            for metric_index, metric_name in enumerate(self.metrics.keys()):
+                wandb.define_metric(name=f'metrics/{self.label}/{metric_name}', summary=self.summary[metric_index])
 
     @property
     def eval_interval(self):

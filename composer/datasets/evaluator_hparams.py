@@ -48,6 +48,7 @@ class EvaluatorHparams(hp.Hparams):
     eval_dataset: DatasetHparams = hp.required(doc='Evaluator dataset for the Evaluator')
     eval_interval: Optional[str] = hp.auto(Evaluator, 'eval_interval')
     subset_num_batches: Optional[int] = hp.auto(Evaluator, 'subset_num_batches')
+    summary: Optional[List[str]] = hp.optional(doc="A list of summary statistics for each metric.", default=None)
     metric_names: Optional[List[str]] = hp.optional(
         doc=textwrap.dedent("""Name of the metrics for the evaluator. Can be a torchmetrics metric name or the
         class name of a metric returned by model.metrics(). If None (the default), uses all metrics in the model"""),
@@ -100,4 +101,5 @@ class EvaluatorHparams(hp.Hparams):
             metrics=evaluator_metrics,
             eval_interval=self.eval_interval,
             subset_num_batches=self.subset_num_batches,
+            summary=self.summary,
         )
