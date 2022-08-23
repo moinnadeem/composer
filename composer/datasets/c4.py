@@ -47,7 +47,7 @@ class StreamingC4(StreamingDataset):
     def _tokenize(self, text_sample):
         if self.group_method == 'truncate':
             truncation = True
-            padding = 'max_length'
+            padding = "longest"
             max_length = self.max_seq_len
         else:
             truncation = False
